@@ -1,0 +1,33 @@
+{
+    "name": "Boostmarks",
+    "version": "1",
+    "manifest_version": 3,
+    "description": "Powerfull bookmarks manager",
+    "background": {
+      "service_worker": "service_worker.js",
+      "type": "module"
+    },
+    "content_scripts": [
+        {
+          "matches": ["<all_urls>"],
+          "js": ["content_script.js"]
+        }
+    ],
+    "action": {
+      "default_title": "Boostmarks",
+      "default_popup": "popup.html",
+      "default_icon": {              
+        "16": "icon.png", 
+        "24": "icon.png",   
+        "32": "icon.png"  
+      }
+  },
+    "permissions": [
+        "activeTab",
+        "tabCapture",
+        "unlimitedStorage",
+        "tabs",
+        "<all_urls>",
+        "bookmarks"
+      ]
+ }
