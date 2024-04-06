@@ -8,7 +8,7 @@ import Errors from "../../../Tools/Errors";
 
     private validate(tag: ITags):void
     {
-        if(!tag.title) throw Error(Errors.Tags.Untitled);
+        if(!tag.title) throw new Error(Errors.Tags.Untitled);
     }
     public async add(tag: ITags): Promise<void>
     {
@@ -26,7 +26,7 @@ import Errors from "../../../Tools/Errors";
     }
     public async getTags(): Promise<ITags[]>
     {
-        return this.table.toArray();
+        return await this.table.toArray();
     }
     public async getTagsByIds(tagsIds: string[]): Promise<ITags[] | any[]> 
     {

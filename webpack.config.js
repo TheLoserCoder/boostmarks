@@ -23,7 +23,7 @@ function handler(env)
       ...options,
         entry: {
             'index': path.join(__dirname, '/src/index.tsx'),
-            'worker' : path.join(__dirname, '/src/Worker/worker.tsx')
+            'worker' : path.join(__dirname, '/src/Worker/worker.ts')
             },
         output: {
             path: path.join(__dirname, '/web-ext'),

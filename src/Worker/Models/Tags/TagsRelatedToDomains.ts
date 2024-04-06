@@ -10,8 +10,8 @@ export interface DomainsIdsMapWithRelatedTagsIds{
     [domainId: string] : string[];
 }
 //aliases 
-type TIMWRDI = ITagsIdsMapWithRelatedDomainsIds;
-type DIMWRTI = DomainsIdsMapWithRelatedTagsIds;
+export type TIMWRDI = ITagsIdsMapWithRelatedDomainsIds;
+export type DIMWRTI = DomainsIdsMapWithRelatedTagsIds;
 
 class TagsAndDomainsRelationsAPI{
     private table: Dexie.Table<ITADR> = DB.TagsAndDomainsRelations;
