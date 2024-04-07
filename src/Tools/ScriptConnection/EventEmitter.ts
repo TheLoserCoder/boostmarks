@@ -1,18 +1,19 @@
 
-export type EventHandler = (data: any) => void;
+export type EventHandler<DataType> = (data: DataType) => any;
+export type EventName = string | number;
 
-export interface IEventsMap{
-    [eventName:string]: EventHandler[]
+export interface IEventsMap<DataType>{
+    [eventName:EventName]: EventHandler<DataType>[]
 }
 
-export default class EventEmitter
+export default class EventEmitter<DataType>
 {
-    protected eventsMap:IEventsMap = {};
-    protected verify(eventName:string)
+    protected eventsMap:IEventsMap<DataType> = {};
+    protected verify(eventName:EventName)
     {
         if(!this.eventsMap[eventName]) throw Error("No handler for this event");
     }
-    public on(eventName: string, handler: EventHandler) : any
+    public on(eventName: EventName, handler: EventHandler<DataType>) : any
     {
         if(this.eventsMap[eventName]){
             this.eventsMap[eventName].push(handler);
@@ -20,12 +21,17 @@ export default class EventEmitter
             this.eventsMap[eventName] = [handler];
         }
     }
-    public emit(eventName:string, data: any)
+    public emit(eventName:EventName, data: DataType)
     {
         this.verify(eventName);
         this.eventsMap[eventName].forEach( handler => handler(data) )
     }
-    public remove(eventName:string, handler?:EventHandler)
+    public exhaustEmit(eventName:EventName, data: DataType)
+    {
+        this.verify(eventName);
+        return this.eventsMap[eventName].map( handler => handler(data) )
+    }
+    public remove(eventName:EventName, handler?:EventHandler<DataType>)
     {
         this.verify(eventName);
         if(handler){
@@ -36,7 +42,7 @@ export default class EventEmitter
             delete this.eventsMap[eventName];
         }
     }
-    public once(eventName:string, handler:EventHandler)
+    public once(eventName:EventName, handler:EventHandler<DataType>)
     {
         const cb = (data: any) => {
             this.remove(eventName, handler);

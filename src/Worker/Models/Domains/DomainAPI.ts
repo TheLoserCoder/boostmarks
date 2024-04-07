@@ -4,11 +4,12 @@ import uniqid from 'uniqid';
 import Domains from "./Domains";
 import TADRAPI, { DIMWRTI } from "../Tags/TagsRelatedToDomains";
 import Tags from "../Tags/Tags";
+import { liveQuery } from "dexie";
 
-export interface IDomainWithDags extends IDomains{
+export interface IDomainWithTags extends IDomains{
     tags: ITags[];
 }
-export type DWT = IDomainWithDags;
+export type DWT = IDomainWithTags;
 
 export interface IDomainData{
     domain: string,

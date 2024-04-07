@@ -3,6 +3,8 @@ import DB from "../../DB/DB";
 import { ITags } from "../../DB/TypesAndInterfaces";
 import Errors from "../../../Tools/Errors";
 
+export type TagsIds = string[];
+
  class Tags{
     private table: Dexie.Table<ITags> = DB.Tags;
 
@@ -20,7 +22,7 @@ import Errors from "../../../Tools/Errors";
         this.validate(tag);
         await this.table.put(tag);
     }
-    public async remove(tagsIds: string[]): Promise<void>
+    public async remove(tagsIds: TagsIds): Promise<void>
     {
         await this.table.bulkDelete(tagsIds);
     }
@@ -28,7 +30,7 @@ import Errors from "../../../Tools/Errors";
     {
         return await this.table.toArray();
     }
-    public async getTagsByIds(tagsIds: string[]): Promise<ITags[] | any[]> 
+    public async getTagsByIds(tagsIds: TagsIds): Promise<ITags[] | any[]> 
     {
         if(!tagsIds.length) return [];
         return await this.table.bulkGet(tagsIds);

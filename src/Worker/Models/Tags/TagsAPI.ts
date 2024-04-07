@@ -16,11 +16,7 @@ export interface ITagData{
 //alias
 export type TWD = ITagWithDomains;
 
-export default class TagsAPI{
-    public subscribe(callback: () => void)
-    {
-
-    }
+class TagsAPI{
     public async getTags(): Promise<TWD[]>
     {
         let 
@@ -102,3 +98,5 @@ export default class TagsAPI{
     }
    
 }
+
+export default new TagsAPI();

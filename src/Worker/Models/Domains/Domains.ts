@@ -2,8 +2,9 @@ import Dexie from "dexie";
 import DB from "../../DB/DB";
 import { IDomains } from "../../DB/TypesAndInterfaces";
 import isValidDomain from "is-valid-domain";
-
 import Errors from "../../../Tools/Errors";
+
+export type DomainsIDs = string[];
 
 class Domains{
     private table: Dexie.Table<IDomains> = DB.Domains;
@@ -22,7 +23,7 @@ class Domains{
         this.validate(domain);
         await this.table.put(domain);
     }
-    public async remove(domainsIds: string[])
+    public async remove(domainsIds: DomainsIDs)
     {
         await this.table.bulkDelete(domainsIds);
     }
@@ -30,7 +31,7 @@ class Domains{
     {
         return await this.table.toArray();
     }
-    public async getDomainsByIds(domainsIds: string[]): Promise<IDomains[]> 
+    public async getDomainsByIds(domainsIds: DomainsIDs): Promise<IDomains[]> 
     {
         if(!domainsIds.length) return [];
         const res: (IDomains | any)[] =  await this.table.bulkGet(domainsIds);

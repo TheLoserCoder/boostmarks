@@ -1,5 +1,5 @@
 import uniqid from "uniqid";
-import EventEmitter from "./EventEmitter";
+import EventEmitter, {EventName} from "./EventEmitter";
 
 const browser = window.chrome || (window as any).browser;
 
@@ -9,11 +9,24 @@ enum MessageType{
 };
 
 type Port = chrome.runtime.Port;
-interface IMessage {eventName: string, type: MessageType, data: any, id: string};
 
-class SCPort extends EventEmitter{
+interface IMessage{
+    eventName: EventName, 
+    type: MessageType, 
+    data: any, 
+    id: string
+    noResponse?: Boolean
+};
+
+
+interface IMHandler<DataType>{
+    ({data, sendResponse} : {data: DataType,   sendResponse?: (data: any) => void}) : any
+}
+
+class SCPort extends EventEmitter<any>
+{
     private port!: Port;
-    public get nativePort() {return this.port};
+    public readonly nativePort = this.port;
 
     constructor(private name: string){
         super();
@@ -46,32 +59,60 @@ class SCPort extends EventEmitter{
         }
     }
 
-    private async onMessage( {id, data, type, eventName}: IMessage, port: Port)
+    private sendResponse(message: IMessage, ref: {flag:Boolean})
     {
+        if(ref.flag || message.noResponse) return;
+        ref.flag = true;
+        this.postMessage(message)
+    }
 
+    private async onMessage(  message: IMessage, port: Port)
+    {
+        const {id, data, type, eventName, noResponse} = message;
         if(type == MessageType.Request){
-            this.emit(eventName, 
+            const responseRef = {flag:false};
+            const resArr : any[] = await Promise.all(
+                this.exhaustEmit(
+                        eventName, 
+                        {
+                            data, 
+                            sendResponse: (data: any) => this.sendResponse(
+                                {   
+                                    ...message,
+                                    data, 
+                                    type: MessageType.Response,
+                                },
+                                responseRef
+                            )
+                        }
+                    )
+                );
+
+            const res : any | any[] = resArr.length == 1 ? resArr[0] : resArr;
+            this.sendResponse(
                 {
-                    data, 
-                    sendResponse: (data:any) : void => 
-                        this.postMessage({data, 
-                                            id, 
-                                            type: MessageType.Response,
-                                            eventName})
-                })
+                    ...message,
+                    data: res,
+                    type: MessageType.Response
+                },
+                responseRef
+            );
+            
         }
 
-        if(type == MessageType.Response){
+        if(type == MessageType.Response && !noResponse){
             this.emit(id, data);
         }
        
     }
 
-    public sendMessage(eventName: string, data: any) : Promise<any>
+    public sendMessage(eventName: EventName, data: any, noResponse?: Boolean) : Promise<any> | void
     {
         const id = uniqid();
       
-        this.postMessage({id, type: MessageType.Request, data, eventName});
+        this.postMessage({id, type: MessageType.Request, data, eventName, noResponse});
+
+        if(noResponse) return;
 
         return new Promise((res) => {
              this.once(id, res);
@@ -82,7 +123,12 @@ class SCPort extends EventEmitter{
     {
         this.port.disconnect();
     }
-
+    public on<DataType>(
+        eventName: EventName,
+        handler: IMHandler<DataType>
+    ) {
+        super.on(eventName, handler);
+    }
 }
 
 

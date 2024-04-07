@@ -1,12 +1,11 @@
 import React from "react";
+import Carcass from "./Carcass/Сarcass";
 
 export default function App()
 {
     return (
-
-        <div style = { {}} >
-
-            <h1> Hello. world!</h1>
-        </div>
+        < >
+           <Carcass/>
+        </>
     )
 }

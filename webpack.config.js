@@ -10,9 +10,6 @@ function handler(env)
       options.devServer = {
         static: {
           directory: path.join(__dirname, 'web-ext')
-        },
-        devMiddleware:{
-          writeToDisk: true
         }
       }
     }else{

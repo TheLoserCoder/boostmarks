@@ -5,6 +5,7 @@
       "jsx": "react",
       "allowSyntheticDefaultImports": true,
       "strict": true,
+      "esModuleInterop": true
     },
     "include": ["src/**/*"],
   }
