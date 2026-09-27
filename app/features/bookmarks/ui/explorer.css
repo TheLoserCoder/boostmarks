@@ -144,91 +144,21 @@
 }
 
 .path-input {
-  background: transparent;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.25rem;
-  color: inherit;
   flex: 1;
-  font: inherit;
   min-width: 0;
-  padding: 0.35rem 0.5rem;
 }
 
-.path-submit {
-  background: var(--hover);
-  border: 1px solid var(--border);
-  border-radius: 0.25rem;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  padding: 0.35rem 0.6rem;
+.address-bar-error {
+  flex-basis: 100%;
 }
 
-.path-error {
-  color: #b3261e;
-  font-size: 0.85rem;
-  margin: 0.2rem 0 0;
-  width: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  .path-error {
-    color: #ff8a80;
-  }
-}
-
-.search-field {
-  align-items: center;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.25rem;
-  display: flex;
+.command-bar .ui-search {
   flex: 0 1 14rem;
-  gap: 0.35rem;
   min-width: 9rem;
-  padding: 0 0.4rem;
-}
-
-.search-field:focus-within {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.search-field input {
-  background: transparent;
-  border: none;
-  color: inherit;
-  flex: 1;
-  font: inherit;
-  min-width: 0;
-  padding: 0.4rem 0;
-}
-
-.search-field input:focus-visible {
-  outline: none;
 }
 
 .view-switcher {
-  align-items: center;
-  border: none;
-  display: flex;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-}
-
-.view-switcher legend {
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-}
-
-.view-switcher label {
-  align-items: center;
-  display: inline-flex;
-  gap: 0.3rem;
+  flex: none;
 }
 
 .status {

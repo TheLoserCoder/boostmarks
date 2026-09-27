@@ -1,0 +1,117 @@
+/* Overlay surfaces: context menu and modal dialog. */
+
+.ui-overlay {
+  background: rgb(0 0 0 / 45%);
+  inset: 0;
+  position: fixed;
+  z-index: 50;
+}
+
+.ui-dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  left: 50%;
+  max-width: min(26rem, calc(100vw - 2rem));
+  padding: var(--space-4);
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 26rem;
+  z-index: 51;
+}
+
+.ui-dialog-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.ui-dialog-description {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin: 0;
+}
+
+.ui-dialog-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.ui-menu {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+  min-width: 13rem;
+  padding: var(--space-1);
+  z-index: 55;
+}
+
+.ui-menu-item {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--font-md);
+  gap: var(--space-2);
+  justify-content: space-between;
+  min-height: 1.9rem;
+  outline: none;
+  padding: 0 var(--space-2);
+  user-select: none;
+}
+
+.ui-menu-item-label {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.ui-menu-item[data-highlighted] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.ui-menu-item[data-disabled] {
+  color: var(--text-muted);
+  cursor: default;
+  opacity: 0.7;
+}
+
+.ui-menu-item[data-disabled][data-highlighted] {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.ui-menu-label {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  padding: var(--space-1) var(--space-2);
+  text-transform: uppercase;
+}
+
+.ui-menu-separator {
+  background: var(--border);
+  height: 1px;
+  margin: var(--space-1) 0;
+}
+
+.ui-menu-shortcut {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  letter-spacing: 0.02em;
+}
+
+.ui-menu-item[data-highlighted] .ui-menu-shortcut {
+  color: inherit;
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Folder, FolderOpen, Link, PinOff } from 'lucide-react';
+import { IconButton } from '../../../ui/Button';
 import { quickLinks } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
 
@@ -13,9 +14,9 @@ interface QuickLinksProps {
 
 function UnpinButton({ title, id, onTogglePin }: { title: string; id: string; onTogglePin: (id: string) => void }) {
   return (
-    <button type="button" className="icon-button" aria-label={`Открепить «${title}»`} onClick={() => onTogglePin(id)}>
+    <IconButton size="sm" aria-label={`Открепить «${title}»`} onClick={() => onTogglePin(id)}>
       <PinOff size={14} aria-hidden="true" />
-    </button>
+    </IconButton>
   );
 }
 

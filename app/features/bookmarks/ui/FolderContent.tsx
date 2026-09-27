@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { Folder, Link, Pin, PinOff } from 'lucide-react';
+import { IconButton } from '../../../ui/Button';
 import { childrenOf } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
 import { useRowSelection } from './useRowSelection';
@@ -40,14 +41,14 @@ function PinToggle({ item, pinned, onTogglePin }: { item: BookmarkNode; pinned: 
   const title = item.title || item.url || '';
 
   return (
-    <button
-      type="button"
-      className="icon-button pin-toggle"
+    <IconButton
+      size="sm"
+      className="pin-toggle"
       aria-label={pinned ? `Открепить «${title}»` : `Закрепить «${title}»`}
       onClick={() => onTogglePin(item.id)}
     >
       {pinned ? <PinOff size={14} aria-hidden="true" /> : <Pin size={14} aria-hidden="true" />}
-    </button>
+    </IconButton>
   );
 }
 

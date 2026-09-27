@@ -1,0 +1,337 @@
+/* Base look and feel for the shared UI kit. */
+
+body {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.ui-focusable:focus-visible,
+.ui-button:focus-visible,
+.ui-icon-button:focus-visible,
+.ui-input:focus-visible,
+.ui-checkbox:focus-visible,
+.ui-radio-item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Button ------------------------------------------------------------------ */
+
+.ui-button {
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--font-md);
+  gap: var(--space-2);
+  justify-content: center;
+  line-height: 1.2;
+  min-height: 2.1rem;
+  padding: 0 var(--space-3);
+  text-decoration: none;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+
+.ui-button:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.ui-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.ui-button[data-variant='solid'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.ui-button[data-variant='solid']:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.ui-button[data-variant='ghost'] {
+  background: transparent;
+  border-color: transparent;
+}
+
+.ui-button[data-variant='ghost']:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.ui-button[data-variant='danger'] {
+  background: var(--danger-soft);
+  border-color: transparent;
+  color: var(--danger);
+}
+
+.ui-button[data-variant='danger']:hover:not(:disabled) {
+  background: var(--danger);
+  color: var(--accent-contrast);
+}
+
+.ui-button[data-size='sm'] {
+  font-size: var(--font-sm);
+  min-height: 1.8rem;
+  padding: 0 var(--space-2);
+}
+
+/* Icon button ------------------------------------------------------------- */
+
+.ui-icon-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  justify-content: center;
+  min-height: 2.1rem;
+  min-width: 2.1rem;
+  padding: 0;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.ui-icon-button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.ui-icon-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.ui-icon-button[data-active='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ui-icon-button[data-size='sm'] {
+  min-height: 1.7rem;
+  min-width: 1.7rem;
+}
+
+.ui-field-label-hidden {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* Field ------------------------------------------------------------------- */
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-field-label {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+.ui-input {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-md);
+  min-height: 2.1rem;
+  min-width: 0;
+  padding: 0 var(--space-2);
+  transition: border-color 120ms ease, background-color 120ms ease;
+  width: 100%;
+}
+
+.ui-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.ui-input:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.ui-input:disabled {
+  background: var(--surface-2);
+  cursor: default;
+  opacity: 0.7;
+}
+
+.ui-input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.ui-field-error {
+  color: var(--danger);
+  font-size: var(--font-sm);
+  margin: 0;
+}
+
+.ui-field-hint {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin: 0;
+}
+
+/* Search field (input with leading/trailing slots) ------------------------ */
+
+.ui-search {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-2);
+  min-height: 2.1rem;
+  padding: 0 var(--space-2);
+  transition: border-color 120ms ease;
+}
+
+.ui-search:hover {
+  border-color: var(--text-muted);
+}
+
+.ui-search:focus-within {
+  border-color: var(--accent);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-search input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  flex: 1;
+  font: inherit;
+  font-size: var(--font-md);
+  min-width: 0;
+  padding: 0;
+}
+
+.ui-search input:focus-visible {
+  outline: none;
+}
+
+.ui-search-icon {
+  color: var(--text-muted);
+  flex: none;
+}
+
+/* Checkbox ---------------------------------------------------------------- */
+
+.ui-checkbox-row {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-1) var(--space-1) 0;
+  user-select: none;
+}
+
+.ui-checkbox-row[data-disabled] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ui-checkbox {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex: none;
+  height: 1.15rem;
+  justify-content: center;
+  transition: background-color 120ms ease, border-color 120ms ease;
+  width: 1.15rem;
+}
+
+.ui-checkbox:hover:not([data-disabled]) {
+  border-color: var(--accent);
+}
+
+.ui-checkbox[data-state='checked'],
+.ui-checkbox[data-state='indeterminate'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.ui-checkbox-label {
+  font-size: var(--font-md);
+}
+
+/* Radio cards ------------------------------------------------------------- */
+
+.ui-radio-group {
+  border: none;
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+}
+
+.ui-radio-group-legend {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.ui-radio-item {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  gap: var(--space-2);
+  min-height: 2.1rem;
+  padding: 0 var(--space-2);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.ui-radio-item:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.ui-radio-item[data-state='checked'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ui-radio-label {
+  font-size: var(--font-md);
+}
+
+/* Tooltip ----------------------------------------------------------------- */
+
+.ui-tooltip {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  font-size: var(--font-sm);
+  padding: var(--space-1) var(--space-2);
+  z-index: 60;
+}

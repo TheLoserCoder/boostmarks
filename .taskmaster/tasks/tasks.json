@@ -89,7 +89,7 @@
         "description": "Create side navigation, two panes, tabs, paths, list/table/grid, virtualized large views, keyboard selection, rectangle selection, dnd-kit DnD and essential popup actions; add ru/en and theme settings.",
         "details": "",
         "testStrategy": "Test-first component interactions and keyboard accessibility; Chromium/Firefox extension smoke tests, reduced-motion and large tree benchmarks.",
-        "status": "in-progress",
+        "status": "deferred",
         "dependencies": [
           "2"
         ],
@@ -190,7 +190,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-09-27T18:23:41.110Z"
+        "updatedAt": "2026-09-27T18:31:10.482Z"
       },
       {
         "id": "4",
@@ -340,13 +340,201 @@
           }
         ],
         "updatedAt": "2026-09-27T17:51:41.547Z"
+      },
+      {
+        "id": "9",
+        "title": "[P0] Radix-based design system and fully styled controls",
+        "description": "Build an extension-specific design system and replace browser-default-looking controls in the maintained React UI; bring the manager toward a cohesive final visual language without changing bookmark domain behavior.",
+        "details": "Compare Radix Primitives + existing CSS tokens against Radix Themes before selecting. Preferred starting point: Radix accessibility primitives with custom, shared styled components (Button/IconButton/TextField/RadioGroup/Checkbox/ContextMenu/Dialog/Tooltip as needed), lucide-react icons, and light/dark/system-compatible tokens. Inventory manager, popup and options; prioritize ViewSwitcher native-looking radios, loading/empty/error and toolbar controls. Keep real input/button semantics under custom visuals; no fake div controls or invisible keyboard interactions. Do not import legacy src modules, do not add unused permissions, retain file-length limit and virtualization. Theme preference and translations remain task 3.7.",
+        "testStrategy": "TDD component tests for focus, tab/arrow/space, checked/disabled and form behavior; keyboard and screen-reader-name review, light/dark/high-contrast/reduced-motion checks, Chromium UI snapshots at desktop/narrow widths, npm run check and npm run test:e2e.",
+        "status": "done",
+        "dependencies": [
+          "8"
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "[P0] Audit controls and approve final UI direction",
+            "description": "Inventory every visible manager/popup/options control and default-browser styling; compare Radix Primitives+CSS with Radix Themes; define visual acceptance criteria.",
+            "details": "Deliver design reference for spacing, surfaces, typography, icon sizing, states, light/dark/forced-colors, narrow layouts and interaction map. Include current ViewSwitcher radio inputs; do not invent functional options or replace semantic inputs with divs.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 9,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:43:49.440Z"
+          },
+          {
+            "id": 2,
+            "title": "[P0] Establish tokens, themes-ready CSS and Radix foundation",
+            "description": "Implement shared design tokens, typography, surfaces, focus/disabled/error and overlay rules, with selected Radix primitives isolated to UI layer.",
+            "details": "Keep existing shell/explorer style ownership; tokens support system light/dark and later task 3.7 preference. No business rules in component wrappers; avoid unused primitive packages and measure bundle impact.",
+            "status": "done",
+            "dependencies": [
+              "9.1"
+            ],
+            "parentTaskId": 9,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:43:49.464Z"
+          },
+          {
+            "id": 3,
+            "title": "[P0] Build reusable styled accessible controls",
+            "description": "Add app-specific Button/IconButton, TextField, RadioGroup/Checkbox, ContextMenu/Dialog and optional Tooltip wrappers with consistent variants.",
+            "details": "Style all visible states rather than exposing UA appearance; real button/input semantics, Radix keyboard semantics, labels, focus-visible, disabled, checked and pending states. Menu/Dialog API can be initially thin; no duplicated interaction logic.",
+            "status": "done",
+            "dependencies": [
+              "9.2"
+            ],
+            "parentTaskId": 9,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:43:49.478Z"
+          },
+          {
+            "id": 4,
+            "title": "[P0] Replace native-looking maintained UI controls",
+            "description": "Migrate ViewSwitcher, search/path fields, refresh/pin/quick links and any existing popup/options controls to the shared visual language.",
+            "details": "Existing behavior, route links, quick-link persistence and virtualized list/table remain unchanged. RadioGroup has single tab stop and arrow/space behavior; styled checkboxes are reusable but not inserted as dummy settings.",
+            "status": "done",
+            "dependencies": [
+              "9.3"
+            ],
+            "parentTaskId": 9,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:43:49.495Z"
+          },
+          {
+            "id": 5,
+            "title": "[P1] Component accessibility and bundle regression gate",
+            "description": "Validate visual and interaction contract before the folder menu consumes the new primitives.",
+            "details": "TDD tests, keyboard focus/labels, checked/disabled/invalid, light/dark/forced-colors/reduced motion; Chromium snapshots at desktop/narrow widths; npm run check and E2E, Firefox lint.",
+            "status": "done",
+            "dependencies": [
+              "9.4"
+            ],
+            "parentTaskId": 9,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:43:49.510Z"
+          }
+        ],
+        "updatedAt": "2026-09-27T18:43:49.510Z"
+      },
+      {
+        "id": "10",
+        "title": "[P0] Create native bookmark folders from manager context menu",
+        "description": "Add an accessible context menu and reliable Create folder operation in the manager, including empty-folder state and an always discoverable non-context-menu action.",
+        "details": "Define target policy: on current pane/background create inside current folder; on folder row/sidebar folder create inside that folder; on bookmark row create in its parent. Disable/omit action for non-writable roots or invalid targets with explanation. Provide toolbar New folder action for pointer/touch discovery and Shift+F10/Menu keyboard alternative. Use task 9 shared styled Radix ContextMenu/Dialog/TextField. Create through an application command/port and browser.bookmarks.create adapter (background request/response preferred); browser native tree remains source of truth, Dexie projection updates via serialized onCreated event, never direct projection writes. Validate nonempty trimmed name, define and test sibling duplicate policy, recheck stale/deleted parent, prevent duplicate submits, surface browser errors, focus/name field/cancel/restore. On success reveal/select new folder after projection update; no premature optimistic writes.",
+        "testStrategy": "TDD pure target/name rules; mocked browser API command/transport tests and fake-indexeddb projection event integration; Chromium installed-extension E2E for background/row/empty state, keyboard menu, creation/reload, errors and rapid submit; Firefox lint plus runtime deferred to task 7; npm run check.",
+        "status": "pending",
+        "dependencies": [
+          "9"
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "[P0] Specify context targets and name validation",
+            "description": "Write test-first rules for create-inside-current-pane, clicked folder, sidebar folder and bookmark-parent; writable-root policy and duplicate sibling handling.",
+            "details": "Right-click empty pane and empty folder; Shift+F10/Menu on focused folder row; never infer target from unrelated selection. Propose rejecting empty/whitespace and new same-parent duplicate names, but surface existing native duplicates as ambiguity rather than rewriting them.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10,
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "[P0] Add native folder-create command and error contract",
+            "description": "Define application request/result port and browser bookmark adapter/message transport, then create via browser.bookmarks.create.",
+            "details": "Revalidate parent (native tree may have changed), serialize/guard rapid submits, map permission/stale-parent/browser errors. Return native ID; let onCreated reconcile Dexie and notify pages; no direct Dexie insertion. Keep service worker and page wiring at composition roots.",
+            "status": "pending",
+            "dependencies": [
+              "10.1"
+            ],
+            "parentTaskId": 10,
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "[P0] Build discoverable New folder action and context menu/dialog",
+            "description": "Use shared Radix-based styled ContextMenu/Dialog/TextField; add right-click to pane/folder/bookmark/quick-link targets plus visible New folder toolbar action.",
+            "details": "Open via contextmenu and keyboard Shift+F10/Menu, focus field and restore trigger, Enter submit/Escape cancel, pending disabled state, inline errors. Preserve selection/drag/marquee, nested pin click, virtualization and search state. Reveal created folder only after projection confirms ID; handle empty projection.",
+            "status": "pending",
+            "dependencies": [
+              "10.2"
+            ],
+            "parentTaskId": 10,
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "[P0] Verify creation, synchronization and keyboard in extension",
+            "description": "Add focused unit/integration and real Chromium E2E for all targets, invalid/stale parent, duplicate-submit, persistence after reload and keyboard menu.",
+            "details": "Test fake-indexeddb event flow and independent browser mutation boundary. Run check, test:e2e, Firefox lint; runtime Firefox remains task 7.",
+            "status": "pending",
+            "dependencies": [
+              "10.3"
+            ],
+            "parentTaskId": 10,
+            "parentId": "undefined"
+          }
+        ]
+      },
+      {
+        "id": "11",
+        "title": "[P1] Final-pass visual polish and interaction QA",
+        "description": "Harden the new design system and folder-creation workflow as a coherent, polished extension UI across manager, popup and options without claiming unimplemented popup/settings features.",
+        "details": "Refine manager hierarchy, icon/text balance, density, hover/focus/selected/disabled/pending/error states, overlay layering and empty states; align current popup/options shells without adding dummy settings. Validate narrow extension windows, long bookmark names/URLs, light/dark/forced-colors contrast and reduced motion. Review updated Web Interface Guidelines, accessible focus restoration and touch alternatives; performance and bundle footprint at large folders, preserving windowed list/table/search. Grid scaling remains existing subtask 3.9; future i18n/theme preference remains 3.7. Document UI contract in root AGENTS.md when implemented.",
+        "testStrategy": "Chromium visual snapshots and keyboard flows at 2 viewport widths and light/dark; menu/Dialog and mutation E2E including reload; npm run check, test:e2e, test:firefox:lint; Firefox runtime under existing task 7; accessibility audit including accessible names, contrast and focus.",
+        "status": "pending",
+        "dependencies": [
+          "9",
+          "10"
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "[P1] Polish manager composition and states",
+            "description": "Refine explorer toolbar/sidebar/content density, hierarchy, icons, long-text behavior and selection/context-menu/dialog/empty/pending/error states.",
+            "details": "Review current web-interface-guidelines; support small manager windows, light/dark and forced colors; no decorative dead controls. Keep visible focus and safe overlay/focus layering.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 11,
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "[P1] Align popup/options shells without scope creep",
+            "description": "Reuse new tokens and styled components in current popup/options skeleton, preserving existing navigation and not fabricating settings or popup operations.",
+            "details": "Future popup actions are task 3.6; ru/en and user theme switching stay task 3.7. Do not duplicate implementations.",
+            "status": "pending",
+            "dependencies": [
+              "11.1"
+            ],
+            "parentTaskId": 11,
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "[P1] Visual, accessibility and performance acceptance",
+            "description": "Review at desktop/narrow widths, light/dark, keyboard/touch, focus restoration, contrast and reduced motion; add visual snapshots and regression checks.",
+            "details": "Check accessible names/semantics (listbox/grid/marquee and nested controls), virtualized 150+ rows and bundle budget; grid >50 virtualization remains 3.9. Run npm run check, test:e2e, Firefox lint; Firefox runtime stays task 7.",
+            "status": "pending",
+            "dependencies": [
+              "11.1",
+              "11.2"
+            ],
+            "parentTaskId": 11,
+            "parentId": "undefined"
+          }
+        ]
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T18:23:41.110Z",
-      "taskCount": 8,
-      "completedCount": 3,
+      "lastModified": "2026-09-27T18:43:49.510Z",
+      "taskCount": 11,
+      "completedCount": 4,
       "tags": [
         "master"
       ]

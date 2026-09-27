@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Pencil } from 'lucide-react';
+import { Button, IconButton } from '../../../ui/Button';
 import { folderChain, formatFolderPath, resolveFolderPath } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
 
@@ -53,7 +54,7 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
       <form className="address-bar path-form" onSubmit={submit}>
         <input
           ref={inputRef}
-          className="path-input"
+          className="ui-input path-input"
           aria-label="Путь к папке"
           value={value}
           onChange={event => setValue(event.target.value)}
@@ -61,11 +62,11 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
             if (event.key === 'Escape') cancel();
           }}
         />
-        <button type="submit" className="path-submit">
+        <Button type="submit" variant="solid" size="sm">
           Перейти
-        </button>
+        </Button>
         {error !== null ? (
-          <p className="path-error" role="alert">
+          <p className="ui-field-error address-bar-error" role="alert">
             {error}
           </p>
         ) : null}
@@ -88,9 +89,9 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
           </li>
         ))}
       </ol>
-      <button type="button" className="icon-button" aria-label="Изменить путь" onClick={startEditing}>
+      <IconButton aria-label="Изменить путь" size="sm" onClick={startEditing}>
         <Pencil size={14} aria-hidden="true" />
-      </button>
+      </IconButton>
     </nav>
   );
 }

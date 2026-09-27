@@ -1,5 +1,7 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Settings } from 'lucide-react';
+import { IconButton } from '../../../ui/Button';
+import { SearchField } from '../../../ui/SearchField';
 import type { ProjectionClient } from '../application/ports';
 import { topLevelFolders } from '../domain/path';
 import { searchNodes } from '../domain/search';
@@ -7,7 +9,6 @@ import type { BookmarkNode } from '../domain/types';
 import { AddressBar } from './AddressBar';
 import { FolderContent } from './FolderContent';
 import { QuickLinks } from './QuickLinks';
-import { SearchField } from './SearchField';
 import { SearchResults } from './SearchResults';
 import { ViewSwitcher } from './ViewSwitcher';
 import { readPinnedIds, writePinnedIds } from './shortcutsPreference';
@@ -127,16 +128,17 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
             <>
               <div className="command-bar">
                 <AddressBar nodes={nodes} folderId={selectedId ?? ''} onNavigate={navigate} />
-                <SearchField value={query} onChange={setQuery} />
+                <SearchField
+                  value={query}
+                  onChange={setQuery}
+                  label="Поиск закладок"
+                  placeholder="Поиск"
+                  clearLabel="Очистить поиск"
+                />
                 <ViewSwitcher value={view} onChange={changeView} />
-                <button
-                  type="button"
-                  className="icon-button"
-                  aria-label="Обновить"
-                  onClick={refresh}
-                >
+                <IconButton aria-label="Обновить" onClick={refresh}>
                   <RefreshCw size={16} aria-hidden="true" />
-                </button>
+                </IconButton>
               </div>
               <p role="status" className="status">
                 {searching ? `Найдено: ${results.length}` : `Закладок в проекции: ${count}`}
