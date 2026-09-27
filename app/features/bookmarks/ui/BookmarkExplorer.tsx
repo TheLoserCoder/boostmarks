@@ -146,6 +146,7 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
                 <SearchResults nodes={nodes} results={results} onOpenFolder={navigate} />
               ) : selectedId !== null ? (
                 <FolderContent
+                  key={selectedId}
                   nodes={nodes}
                   folderId={selectedId}
                   view={view}

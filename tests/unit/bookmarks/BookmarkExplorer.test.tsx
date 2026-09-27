@@ -43,7 +43,7 @@ describe('BookmarkExplorer two-pane shell', () => {
     render(<BookmarkExplorer client={client} />);
     await sidebar();
 
-    fireEvent.click((await content()).getByRole('button', { name: 'Работа' }));
+    fireEvent.doubleClick((await content()).getByRole('button', { name: 'Работа' }));
 
     const breadcrumbs = within(screen.getByRole('navigation', { name: 'Путь' }));
     expect(breadcrumbs.getByRole('button', { name: 'Работа' })).toHaveAttribute('aria-current', 'page');
@@ -95,7 +95,7 @@ describe('BookmarkExplorer two-pane shell', () => {
     const { client, notify, setNodes } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await sidebar();
-    fireEvent.click((await content()).getByRole('button', { name: 'Работа' }));
+    fireEvent.doubleClick((await content()).getByRole('button', { name: 'Работа' }));
     expect((await content()).getByRole('link', { name: 'Глубокий' })).toBeInTheDocument();
 
     setNodes(tree.filter(entry => entry.id !== 'folder' && entry.id !== 'deep'));
@@ -121,16 +121,16 @@ describe('BookmarkExplorer content views', () => {
     render(<BookmarkExplorer client={client} />);
     await content();
 
-    expect(screen.getByRole('list', { name: 'Список' })).toBeInTheDocument();
+    expect(screen.getByRole('listbox', { name: 'Список' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
-    const table = screen.getByRole('table', { name: 'Содержимое папки' });
+    const table = screen.getByRole('grid', { name: 'Содержимое папки' });
     expect(within(table).getByRole('columnheader', { name: 'Название' })).toBeInTheDocument();
     expect(within(table).getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Сетка' }));
-    expect(screen.getByRole('list', { name: 'Плитка' })).toBeInTheDocument();
-    expect(within(screen.getByRole('list', { name: 'Плитка' })).getByRole('button', { name: 'Работа' })).toBeInTheDocument();
+    expect(screen.getByRole('listbox', { name: 'Плитка' })).toBeInTheDocument();
+    expect(within(screen.getByRole('listbox', { name: 'Плитка' })).getByRole('button', { name: 'Работа' })).toBeInTheDocument();
   });
 
   it('remembers the chosen view across renders', async () => {
@@ -142,7 +142,7 @@ describe('BookmarkExplorer content views', () => {
 
     render(<BookmarkExplorer client={client} />);
 
-    await waitFor(() => expect(screen.getByRole('table', { name: 'Содержимое папки' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('grid', { name: 'Содержимое папки' })).toBeInTheDocument());
   });
 });
 
@@ -259,5 +259,136 @@ describe('BookmarkExplorer quick links', () => {
     await sidebar();
 
     expect(await screen.findByRole('link', { name: 'Настройки' })).toHaveAttribute('href', '/options.html');
+  });
+});
+
+const domRect = (left: number, top: number, right: number, bottom: number): DOMRect =>
+  ({
+    left,
+    top,
+    right,
+    bottom,
+    width: right - left,
+    height: bottom - top,
+    x: left,
+    y: top,
+    toJSON: () => ({}),
+  }) as DOMRect;
+
+describe('BookmarkExplorer selection and keyboard', () => {
+  it('selects a row on click without navigating or opening', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+
+    const pane = await content();
+    const work = pane.getByRole('option', { name: 'Работа' });
+    fireEvent.click(work);
+
+    expect(work).toHaveAttribute('aria-selected', 'true');
+    expect(pane.getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
+  it('toggles with ctrl, extends with shift and clears with Escape', async () => {
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+    const pane = await content();
+    const work = pane.getByRole('option', { name: 'Работа' });
+    const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
+
+    fireEvent.click(work);
+    fireEvent.click(bookmark, { ctrlKey: true });
+    expect(work).toHaveAttribute('aria-selected', 'true');
+    expect(bookmark).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.click(bookmark, { ctrlKey: true });
+    expect(bookmark).toHaveAttribute('aria-selected', 'false');
+
+    fireEvent.click(bookmark);
+    fireEvent.click(work, { shiftKey: true });
+    expect(work).toHaveAttribute('aria-selected', 'true');
+    expect(bookmark).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.keyDown(work, { key: 'Escape' });
+    expect(work).toHaveAttribute('aria-selected', 'false');
+    expect(bookmark).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('selects all rows with ctrl+A', async () => {
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+    const pane = await content();
+    const work = pane.getByRole('option', { name: 'Работа' });
+    const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
+
+    fireEvent.click(work);
+    fireEvent.keyDown(work, { key: 'a', ctrlKey: true });
+
+    expect(work).toHaveAttribute('aria-selected', 'true');
+    expect(bookmark).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('moves the roving focus with arrows and extends the range with shift', async () => {
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+    const pane = await content();
+    const work = pane.getByRole('option', { name: 'Работа' });
+    const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
+
+    fireEvent.click(work);
+    expect(work).toHaveFocus();
+
+    fireEvent.keyDown(work, { key: 'ArrowDown', shiftKey: true });
+    expect(bookmark).toHaveFocus();
+    expect(bookmark).toHaveAttribute('aria-selected', 'true');
+    expect(work).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('enters a folder with Enter', async () => {
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+    const work = (await content()).getByRole('option', { name: 'Работа' });
+
+    fireEvent.click(work);
+    fireEvent.keyDown(work, { key: 'Enter' });
+
+    expect((await content()).getByRole('link', { name: 'Глубокий' })).toBeInTheDocument();
+  });
+
+  it('opens the focused bookmark with Enter and plain double click', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+    const pane = await content();
+    const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
+
+    fireEvent.click(bookmark);
+    fireEvent.keyDown(bookmark, { key: 'Enter' });
+    expect(openSpy).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener');
+
+    fireEvent.doubleClick(bookmark);
+    expect(openSpy).toHaveBeenCalledTimes(2);
+    openSpy.mockRestore();
+  });
+
+  it('selects visible rows with a marquee drag on the pane background', async () => {
+    const { client } = fakeClient(tree);
+    render(<BookmarkExplorer client={client} />);
+    const pane = (await content()).getByRole('listbox', { name: 'Список' }).parentElement!;
+    vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue(domRect(0, 0, 400, 300));
+
+    const workRow = pane.querySelector('[data-row-id="folder"]')!;
+    const bookmarkRow = pane.querySelector('[data-row-id="bookmark"]')!;
+    vi.spyOn(workRow, 'getBoundingClientRect').mockReturnValue(domRect(0, 0, 400, 20));
+    vi.spyOn(bookmarkRow, 'getBoundingClientRect').mockReturnValue(domRect(0, 20, 400, 40));
+
+    fireEvent.mouseDown(pane, { button: 0, clientX: 5, clientY: 5 });
+    fireEvent.mouseMove(window, { clientX: 395, clientY: 35 });
+    fireEvent.mouseUp(window, {});
+
+    expect(workRow).toHaveAttribute('aria-selected', 'true');
+    expect(bookmarkRow).toHaveAttribute('aria-selected', 'true');
   });
 });

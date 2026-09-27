@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import React from 'react';
 import { BookmarkExplorer } from '../../../app/features/bookmarks/ui/BookmarkExplorer';
@@ -41,11 +41,17 @@ async function content() {
 
 async function openFolder(title: string) {
   const pane = await content();
-  fireEvent.click(await pane.findByRole('button', { name: title }));
+  fireEvent.doubleClick(await pane.findByRole('option', { name: title }));
 }
 
 function scrollPane(): HTMLElement {
-  return screen.getByRole('list', { name: 'Список' }).parentElement!;
+  return screen.getByRole('listbox', { name: 'Список' }).parentElement!;
+}
+
+beforeEach(() => localStorage.clear());
+
+if (typeof Element.prototype.scrollTo !== 'function') {
+  Object.defineProperty(Element.prototype, 'scrollTo', { configurable: true, writable: true, value: () => undefined });
 }
 
 beforeAll(() => {
@@ -57,8 +63,17 @@ beforeAll(() => {
       disconnect() {}
     },
   );
+  vi.spyOn(Element.prototype, 'scrollTo').mockImplementation(function (this: Element, options?: ScrollToOptions | number) {
+    const top = typeof options === 'number' ? options : options?.top;
+    if (typeof top === 'number') {
+      Object.defineProperty(this, 'scrollTop', { configurable: true, value: top });
+      this.dispatchEvent(new Event('scroll'));
+    }
+  });
   vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(800);
   vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600);
+  vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(10_000_000);
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
     x: 0,
     y: 0,
@@ -84,8 +99,8 @@ describe('large folder virtualization', () => {
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Большая папка');
 
-    const list = within(screen.getByRole('list', { name: 'Список' }));
-    const rows = list.getAllByRole('listitem');
+    const list = within(screen.getByRole('listbox', { name: 'Список' }));
+    const rows = list.getAllByRole('option');
 
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.length).toBeLessThan(120);
@@ -105,10 +120,10 @@ describe('large folder virtualization', () => {
     Object.defineProperty(pane, 'scrollTop', { configurable: true, value: 32 * 1000 });
     fireEvent.scroll(pane);
 
-    const list = within(screen.getByRole('list', { name: 'Список' }));
+    const list = within(screen.getByRole('listbox', { name: 'Список' }));
     expect(list.getByText('Заметка 1000')).toBeInTheDocument();
     expect(list.queryByText('Заметка 0000')).not.toBeInTheDocument();
-    expect(list.getAllByRole('listitem').length).toBeLessThan(120);
+    expect(list.getAllByRole('option').length).toBeLessThan(120);
   });
 
   it('keeps rendering small folders in full', async () => {
@@ -117,7 +132,7 @@ describe('large folder virtualization', () => {
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Маленькая папка');
 
-    const rows = within(screen.getByRole('list', { name: 'Список' })).getAllByRole('listitem');
+    const rows = within(screen.getByRole('listbox', { name: 'Список' })).getAllByRole('option');
     expect(rows).toHaveLength(6);
     expect(rows[0]).toHaveAttribute('aria-setsize', '6');
   });
@@ -129,7 +144,7 @@ describe('large folder virtualization', () => {
     await openFolder('Большая папка');
     fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
 
-    const table = screen.getByRole('table', { name: 'Содержимое папки' });
+    const table = screen.getByRole('grid', { name: 'Содержимое папки' });
     const rows = within(table).getAllByRole('row');
 
     expect(table).toHaveAttribute('aria-rowcount', String(LARGE_COUNT + 1));
@@ -148,5 +163,27 @@ describe('large folder virtualization', () => {
     expect(screen.getByText(`Найдено: ${LARGE_COUNT}`)).toBeInTheDocument();
     expect(results.getAllByRole('listitem').length).toBeLessThan(120);
     expect(results.getByText('Заметка 0000')).toBeInTheDocument();
+  });
+
+  it('keeps the focused row rendered while walking through a virtualized folder', async () => {
+    const { client } = fakeClient(largeFolder('Заметка', LARGE_COUNT));
+    render(<BookmarkExplorer client={client} />);
+    await screen.findByRole('navigation', { name: 'Быстрый доступ' });
+    await openFolder('Большая папка');
+
+    fireEvent.click(screen.getByRole('option', { name: 'Заметка 0000' }));
+    for (let step = 0; step < 60; step += 1) {
+      const active = document.activeElement;
+      const target =
+        active instanceof HTMLElement && active.getAttribute('role') === 'option'
+          ? active
+          : screen.getByRole('listbox', { name: 'Список' });
+      fireEvent.keyDown(target, { key: 'ArrowDown' });
+    }
+
+    const focused = screen.getByRole('option', { name: 'Заметка 0060' });
+    expect(focused).toHaveFocus();
+    expect(focused).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getAllByRole('option').length).toBeLessThan(120);
   });
 });

@@ -133,10 +133,11 @@
             "title": "Selection model and keyboard navigation",
             "description": "Click/ctrl/shift selection, select-all, marquee rectangle selection across a pane, arrow/Home/End navigation, aria-selected and focus management.",
             "details": "",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 3,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:23:41.110Z"
           },
           {
             "id": 5,
@@ -189,7 +190,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-09-27T18:07:18.933Z"
+        "updatedAt": "2026-09-27T18:23:41.110Z"
       },
       {
         "id": "4",
@@ -343,7 +344,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T18:07:18.933Z",
+      "lastModified": "2026-09-27T18:23:41.110Z",
       "taskCount": 8,
       "completedCount": 3,
       "tags": [

@@ -16,8 +16,14 @@ test('manager projects real browser bookmarks and follows changes', async () => 
     await content.getByRole('button', { name: `Закрепить «${created.folderTitle}»` }).click();
     await expect(quickAccess.getByRole('button', { name: `Открепить «${created.folderTitle}»` })).toBeVisible();
 
-    await content.getByRole('button', { name: created.folderTitle, exact: true }).click();
+    await content.getByRole('button', { name: created.folderTitle, exact: true }).dblclick();
     await expect(content.getByRole('link', { name: created.bookmarkTitle })).toBeVisible();
+
+    const bookmarkOption = content.getByRole('option', { name: created.bookmarkTitle });
+    await bookmarkOption.click();
+    await expect(bookmarkOption).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Escape');
+    await expect(bookmarkOption).toHaveAttribute('aria-selected', 'false');
 
     await page.getByRole('button', { name: 'Изменить путь' }).click();
     await page.getByLabel('Путь к папке').fill(`${created.barTitle}\\Boostmarks E2E folder`);
@@ -40,11 +46,11 @@ test('manager projects real browser bookmarks and follows changes', async () => 
     await expect(content.getByRole('link', { name: 'Boostmarks E2E renamed' })).toBeVisible();
 
     await page.getByRole('radio', { name: 'Таблица' }).click();
-    await expect(page.getByRole('table', { name: 'Содержимое папки' })).toBeVisible();
+    await expect(page.getByRole('grid', { name: 'Содержимое папки' })).toBeVisible();
 
     await page.reload();
     await page.getByRole('navigation', { name: 'Быстрый доступ' }).getByRole('button', { name: created.folderTitle, exact: true }).click();
-    await expect(page.getByRole('table', { name: 'Содержимое папки' })).toBeVisible();
+    await expect(page.getByRole('grid', { name: 'Содержимое папки' })).toBeVisible();
     await expect(content.getByRole('link', { name: 'Boostmarks E2E renamed' })).toBeVisible();
 
     await page
