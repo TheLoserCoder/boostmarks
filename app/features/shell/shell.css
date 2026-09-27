@@ -313,8 +313,22 @@ button:focus-visible {
 
 .folder-content,
 .search-results {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.virtual-scroll {
+  flex: 1;
   min-height: 0;
   overflow: auto;
+}
+
+.virtual-row {
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
 
 .content-list {
@@ -382,34 +396,56 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-.content-table {
-  border-collapse: collapse;
+.virtual-table {
   margin-top: 0.5rem;
-  width: 100%;
 }
 
-.content-table th,
-.content-table td {
+.virtual-table-header,
+.virtual-table-row {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 2fr) 7rem minmax(0, 3fr);
+  padding: 0 0.5rem;
+}
+
+.virtual-table-header {
+  background: Canvas;
   border-bottom: 1px solid var(--border);
-  padding: 0.35rem 0.5rem;
-  text-align: left;
-}
-
-.content-table thead th {
   color: var(--muted);
   font-size: 0.8rem;
+  font-weight: 600;
+  height: 30px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-.content-address {
-  overflow-wrap: anywhere;
+.virtual-table-row {
+  border-bottom: 1px solid var(--border);
+  min-height: 34px;
+}
+
+.virtual-table-row:hover {
+  background: var(--hover);
+}
+
+.virtual-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .content-grid {
   display: grid;
+  flex: 1;
   gap: 0.5rem;
   grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   list-style: none;
   margin: 0.5rem 0 0;
+  min-height: 0;
+  overflow: auto;
   padding: 0;
 }
 

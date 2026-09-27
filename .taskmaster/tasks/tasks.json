@@ -89,7 +89,7 @@
         "description": "Create side navigation, two panes, tabs, paths, list/table/grid, virtualized large views, keyboard selection, rectangle selection, dnd-kit DnD and essential popup actions; add ru/en and theme settings.",
         "details": "",
         "testStrategy": "Test-first component interactions and keyboard accessibility; Chromium/Firefox extension smoke tests, reduced-motion and large tree benchmarks.",
-        "status": "deferred",
+        "status": "in-progress",
         "dependencies": [
           "2"
         ],
@@ -122,10 +122,11 @@
             "title": "Virtualized rendering for large folders",
             "description": "TanStack Virtual for list/table rows with measured row heights, stable keys and content-visibility fallback; keep accessibility (roving focus) intact.",
             "details": "",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 3,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T18:07:18.933Z"
           },
           {
             "id": 4,
@@ -176,9 +177,19 @@
             "dependencies": [],
             "parentTaskId": 3,
             "parentId": "undefined"
+          },
+          {
+            "id": 9,
+            "title": "Virtualize grid rows for large folders",
+            "description": "Extend virtualization to the grid view by chunking items into measured rows and rendering only the visible window, keeping card accessibility and stable keys.",
+            "details": "Follow-up to 3.3, which virtualizes list, table and search-result rows. Grid needs a column count derived from the pane width; measure the pane and cap DOM nodes for thousands of cards.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3,
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-09-27T17:39:21.367Z"
+        "updatedAt": "2026-09-27T18:07:18.933Z"
       },
       {
         "id": "4",
@@ -332,7 +343,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T17:51:41.548Z",
+      "lastModified": "2026-09-27T18:07:18.933Z",
       "taskCount": 8,
       "completedCount": 3,
       "tags": [

@@ -2,18 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { BookmarkExplorer } from '../../../app/features/bookmarks/ui/BookmarkExplorer';
-import type { ProjectionClient } from '../../../app/features/bookmarks/application/ports';
 import type { BookmarkNode } from '../../../app/features/bookmarks/domain/types';
+import { fakeClient, node } from './support/fixtures';
 
 beforeEach(() => localStorage.clear());
-
-const node = (partial: Partial<BookmarkNode> & { id: string }): BookmarkNode => ({
-  parentId: null,
-  title: '',
-  kind: 'bookmark',
-  index: 0,
-  ...partial,
-});
 
 const tree: BookmarkNode[] = [
   node({ id: '0', kind: 'folder', title: '' }),
@@ -23,22 +15,6 @@ const tree: BookmarkNode[] = [
   node({ id: 'bookmark', parentId: 'bar', title: 'Boostmarks', url: 'https://example.com', index: 1 }),
   node({ id: 'deep', parentId: 'folder', title: 'Глубокий', url: 'https://deep.dev', index: 0 }),
 ];
-
-function fakeClient(nodes: BookmarkNode[] = tree) {
-  let listener: (() => void) | undefined;
-  const client: ProjectionClient = {
-    read: vi.fn(async () => nodes),
-    readFreshness: vi.fn(async () => undefined),
-    requestSync: vi.fn(),
-    subscribe: vi.fn((next: () => void) => {
-      listener = next;
-      return () => {
-        listener = undefined;
-      };
-    }),
-  };
-  return { client, notify: () => listener?.(), setNodes: (next: BookmarkNode[]) => { nodes = next; } };
-}
 
 async function sidebar() {
   return within(await screen.findByRole('navigation', { name: 'Быстрый доступ' }));
@@ -50,7 +26,7 @@ async function content() {
 
 describe('BookmarkExplorer two-pane shell', () => {
   it('shows top-level folders in the sidebar and the first folder content in the pane', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
 
     const folders = await sidebar();
@@ -63,7 +39,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   });
 
   it('navigates into a nested folder and back through breadcrumbs', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await sidebar();
 
@@ -78,7 +54,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   });
 
   it('opens bookmarks safely in a new tab', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
 
     const link = await (await content()).findByRole('link', { name: 'Boostmarks' });
@@ -95,7 +71,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   });
 
   it('asks the background to resync when the user presses refresh', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await sidebar();
 
@@ -105,7 +81,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   });
 
   it('re-reads the projection when the background reports a change', async () => {
-    const { client, notify, setNodes } = fakeClient();
+    const { client, notify, setNodes } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await sidebar();
 
@@ -116,7 +92,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   });
 
   it('falls back to the first folder when the selected folder disappears', async () => {
-    const { client, notify, setNodes } = fakeClient();
+    const { client, notify, setNodes } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await sidebar();
     fireEvent.click((await content()).getByRole('button', { name: 'Работа' }));
@@ -129,7 +105,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   });
 
   it('reports sync errors to the user and recovers on retry', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     (client.read as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('IndexedDB unavailable'));
     render(<BookmarkExplorer client={client} />);
 
@@ -141,7 +117,7 @@ describe('BookmarkExplorer two-pane shell', () => {
 
 describe('BookmarkExplorer content views', () => {
   it('switches between list, table and grid renderings', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -158,7 +134,7 @@ describe('BookmarkExplorer content views', () => {
   });
 
   it('remembers the chosen view across renders', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     const first = render(<BookmarkExplorer client={client} />);
     await content();
     fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
@@ -172,7 +148,7 @@ describe('BookmarkExplorer content views', () => {
 
 describe('BookmarkExplorer address bar', () => {
   it('edits the folder path, opens the resolved folder and returns to breadcrumbs', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -188,7 +164,7 @@ describe('BookmarkExplorer address bar', () => {
   });
 
   it('keeps the current folder and explains an unknown path', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -201,7 +177,7 @@ describe('BookmarkExplorer address bar', () => {
   });
 
   it('cancels editing with Escape', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -215,7 +191,7 @@ describe('BookmarkExplorer address bar', () => {
 
 describe('BookmarkExplorer search', () => {
   it('finds bookmarks by title and url and shows the containing folder', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -228,7 +204,7 @@ describe('BookmarkExplorer search', () => {
   });
 
   it('clears the query and returns to the folder content', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -242,7 +218,7 @@ describe('BookmarkExplorer search', () => {
   });
 
   it('explains when nothing matches', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -254,7 +230,7 @@ describe('BookmarkExplorer search', () => {
 
 describe('BookmarkExplorer quick links', () => {
   it('pins a content item into the sidebar and remembers it', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await content();
 
@@ -267,7 +243,7 @@ describe('BookmarkExplorer quick links', () => {
 
   it('unpins a shortcut from the sidebar', async () => {
     localStorage.setItem('boostmarks:shortcuts:v1', '["bookmark"]');
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
 
     const links = await sidebar();
@@ -278,7 +254,7 @@ describe('BookmarkExplorer quick links', () => {
   });
 
   it('offers a settings link anchored in the sidebar', async () => {
-    const { client } = fakeClient();
+    const { client } = fakeClient(tree);
     render(<BookmarkExplorer client={client} />);
     await sidebar();
 

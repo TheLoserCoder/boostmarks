@@ -93,3 +93,42 @@ export async function renameBookmark(page: Page, id: string, title: string) {
 export async function removeFolderTree(page: Page, id: string) {
   await page.evaluate(id => (globalThis as unknown as ChromeGlobal).chrome.bookmarks.removeTree(id), id);
 }
+
+export interface SeededLargeFolder {
+  barTitle: string;
+  folderTitle: string;
+  count: number;
+  lastTitle: string;
+}
+
+export async function seedLargeFolder(page: Page, count: number, folderTitle: string): Promise<SeededLargeFolder> {
+  return page.evaluate(
+    async ({ count: total, folderTitle: title }) => {
+      const { bookmarks } = (globalThis as unknown as ChromeGlobal).chrome;
+      const [root] = await bookmarks.getTree();
+      const bar = root?.children?.[0];
+      if (!bar) throw new Error('Bookmarks bar not found');
+      const folder = await bookmarks.create({ parentId: bar.id, title });
+      const batchSize = 25;
+      for (let start = 0; start < total; start += batchSize) {
+        const batch = Array.from({ length: Math.min(batchSize, total - start) }, (_, offset) => start + offset);
+        await Promise.all(
+          batch.map(index =>
+            bookmarks.create({
+              parentId: folder.id,
+              title: `${title} ${String(index).padStart(4, '0')}`,
+              url: `https://example.com/large/${index}`,
+            }),
+          ),
+        );
+      }
+      return {
+        barTitle: bar.title,
+        folderTitle: folder.title,
+        count: total,
+        lastTitle: `${title} ${String(total - 1).padStart(4, '0')}`,
+      };
+    },
+    { count, folderTitle },
+  );
+}

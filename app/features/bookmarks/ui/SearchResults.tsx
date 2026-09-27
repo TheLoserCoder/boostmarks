@@ -2,6 +2,7 @@ import React from 'react';
 import { Folder, Link } from 'lucide-react';
 import { formatFolderPath } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
+import { VirtualList } from './VirtualList';
 
 interface SearchResultsProps {
   nodes: BookmarkNode[];
@@ -15,13 +16,16 @@ export function SearchResults({ nodes, results, onOpenFolder }: SearchResultsPro
       {results.length === 0 ? (
         <p className="empty">Ничего не найдено</p>
       ) : (
-        <ul className="content-list" aria-label="Найденные закладки">
-          {results.map(node => {
+        <VirtualList
+          items={results}
+          getKey={node => node.id}
+          label="Найденные закладки"
+          renderItem={node => {
             const location = node.parentId === null ? '' : formatFolderPath(nodes, node.parentId);
             const title = node.title || node.url || '';
 
             return (
-              <li key={node.id} className={`content-item result-${node.kind}`}>
+              <>
                 {node.kind === 'folder' ? (
                   <button type="button" className="item-link" onClick={() => onOpenFolder(node.id)}>
                     <Folder size={16} aria-hidden="true" />
@@ -34,10 +38,10 @@ export function SearchResults({ nodes, results, onOpenFolder }: SearchResultsPro
                   </a>
                 )}
                 {location !== '' ? <span className="result-location">{location}</span> : null}
-              </li>
+              </>
             );
-          })}
-        </ul>
+          }}
+        />
       )}
     </section>
   );

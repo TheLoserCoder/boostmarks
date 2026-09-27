@@ -2,6 +2,8 @@ import React from 'react';
 import { Folder, Link, Pin, PinOff } from 'lucide-react';
 import { childrenOf } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
+import { VirtualList } from './VirtualList';
+import { VirtualTable } from './VirtualTable';
 import type { ViewMode } from './viewPreference';
 
 interface FolderContentProps {
@@ -69,32 +71,25 @@ export function FolderContent({ nodes, folderId, view, pinnedIds, onSelect, onTo
       {items.length === 0 ? (
         <p className="empty-folder">Папка пуста</p>
       ) : view === 'list' ? (
-        <ul className="content-list" aria-label="Список">
-          {items.map(item => (
-            <li key={item.id} className={`content-item content-${item.kind}`}>
-              {row(item)}
-            </li>
-          ))}
-        </ul>
+        <VirtualList items={items} getKey={item => item.id} label="Список" renderItem={item => row(item)} />
       ) : view === 'table' ? (
-        <table className="content-table" aria-label="Содержимое папки">
-          <thead>
-            <tr>
-              <th scope="col">Название</th>
-              <th scope="col">Тип</th>
-              <th scope="col">Адрес</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(item => (
-              <tr key={item.id}>
-                <td className="content-name">{row(item)}</td>
-                <td>{kindLabel(item)}</td>
-                <td className="content-address">{item.url ?? ''}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <VirtualTable
+          items={items}
+          getKey={item => item.id}
+          label="Содержимое папки"
+          columns={['Название', 'Тип', 'Адрес']}
+          renderCells={item => [
+            <div role="cell" key="name" className="virtual-cell">
+              {row(item)}
+            </div>,
+            <div role="cell" key="type" className="virtual-cell">
+              {kindLabel(item)}
+            </div>,
+            <div role="cell" key="address" className="virtual-cell">
+              {item.url ?? ''}
+            </div>,
+          ]}
+        />
       ) : (
         <ul className="content-grid" aria-label="Плитка">
           {items.map(item => (
