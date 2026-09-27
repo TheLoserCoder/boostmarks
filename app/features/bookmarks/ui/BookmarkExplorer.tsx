@@ -4,6 +4,8 @@ import { topLevelFolders } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
 import { FolderContent } from './FolderContent';
 import { FolderTree } from './FolderTree';
+import { ViewSwitcher } from './ViewSwitcher';
+import { readViewPreference, writeViewPreference, type ViewMode } from './viewPreference';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -20,6 +22,7 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
   const [nodes, setNodes] = useState<BookmarkNode[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
+  const [view, setView] = useState<ViewMode>(() => readViewPreference());
 
   const load = useCallback(async () => {
     try {
@@ -46,6 +49,11 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
     void load();
   };
 
+  const changeView = (mode: ViewMode) => {
+    setView(mode);
+    writeViewPreference(mode);
+  };
+
   if (status === 'error') {
     return (
       <section className="explorer" aria-label="Закладки">
@@ -65,6 +73,7 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
         <button type="button" onClick={refresh} disabled={status === 'loading'}>
           Обновить
         </button>
+        <ViewSwitcher value={view} onChange={changeView} />
         <p role="status" className="status">
           {status === 'loading' ? 'Загрузка…' : `Закладок в проекции: ${count}`}
         </p>
@@ -80,7 +89,7 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
             <FolderTree nodes={nodes} selectedId={selectedId} onSelect={setSelectedId} />
           </nav>
           {selectedId !== null ? (
-            <FolderContent nodes={nodes} folderId={selectedId} onSelect={setSelectedId} />
+            <FolderContent nodes={nodes} folderId={selectedId} view={view} onSelect={setSelectedId} />
           ) : null}
         </div>
       )}

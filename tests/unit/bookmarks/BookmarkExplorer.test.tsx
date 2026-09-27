@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { BookmarkExplorer } from '../../../app/features/bookmarks/ui/BookmarkExplorer';
 import type { ProjectionClient } from '../../../app/features/bookmarks/application/ports';
 import type { BookmarkNode } from '../../../app/features/bookmarks/domain/types';
+
+beforeEach(() => localStorage.clear());
 
 const node = (partial: Partial<BookmarkNode> & { id: string }): BookmarkNode => ({
   parentId: null,
@@ -134,5 +136,36 @@ describe('BookmarkExplorer two-pane shell', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось прочитать локальную проекцию');
     fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
     await waitFor(() => expect(screen.getByRole('navigation', { name: 'Папки' })).toBeInTheDocument());
+  });
+});
+
+describe('BookmarkExplorer content views', () => {
+  it('switches between list, table and grid renderings', async () => {
+    const { client } = fakeClient();
+    render(<BookmarkExplorer client={client} />);
+    await content();
+
+    expect(screen.getByRole('list', { name: 'Список' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
+    const table = screen.getByRole('table', { name: 'Содержимое папки' });
+    expect(within(table).getByRole('columnheader', { name: 'Название' })).toBeInTheDocument();
+    expect(within(table).getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Сетка' }));
+    expect(screen.getByRole('list', { name: 'Плитка' })).toBeInTheDocument();
+    expect(within(screen.getByRole('list', { name: 'Плитка' })).getByRole('button', { name: 'Работа' })).toBeInTheDocument();
+  });
+
+  it('remembers the chosen view across renders', async () => {
+    const { client } = fakeClient();
+    const first = render(<BookmarkExplorer client={client} />);
+    await content();
+    fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
+    first.unmount();
+
+    render(<BookmarkExplorer client={client} />);
+
+    await waitFor(() => expect(screen.getByRole('table', { name: 'Содержимое папки' })).toBeInTheDocument());
   });
 });

@@ -23,6 +23,15 @@ test('manager projects real browser bookmarks and follows changes', async () => 
     await renameBookmark(page, created.bookmarkId, 'Boostmarks E2E renamed');
     await expect(content.getByRole('link', { name: 'Boostmarks E2E renamed' })).toBeVisible();
 
+    await page.getByRole('radio', { name: 'Таблица' }).click();
+    await expect(page.getByRole('table', { name: 'Содержимое папки' })).toBeVisible();
+
+    await page.reload();
+    await sidebar.getByRole('button', { name: created.barTitle }).click();
+    await content.getByRole('button', { name: created.folderTitle }).click();
+    await expect(page.getByRole('table', { name: 'Содержимое папки' })).toBeVisible();
+    await expect(content.getByRole('link', { name: 'Boostmarks E2E renamed' })).toBeVisible();
+
     await removeFolderTree(page, created.folderId);
     await expect(page.getByRole('button', { name: created.folderTitle })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Boostmarks E2E renamed' })).toHaveCount(0);
