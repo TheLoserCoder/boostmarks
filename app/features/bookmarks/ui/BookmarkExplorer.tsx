@@ -189,7 +189,7 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
                   value={query}
                   onChange={setQuery}
                   label="Поиск закладок"
-                  placeholder="Поиск"
+                  placeholder="Название или адрес…"
                   clearLabel="Очистить поиск"
                 />
                 <ViewSwitcher value={view} onChange={changeView} />

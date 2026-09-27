@@ -490,7 +490,7 @@
         "description": "Harden the new design system and folder-creation workflow as a coherent, polished extension UI across manager, popup and options without claiming unimplemented popup/settings features.",
         "details": "Refine manager hierarchy, icon/text balance, density, hover/focus/selected/disabled/pending/error states, overlay layering and empty states; align current popup/options shells without adding dummy settings. Validate narrow extension windows, long bookmark names/URLs, light/dark/forced-colors contrast and reduced motion. Review updated Web Interface Guidelines, accessible focus restoration and touch alternatives; performance and bundle footprint at large folders, preserving windowed list/table/search. Grid scaling remains existing subtask 3.9; future i18n/theme preference remains 3.7. Document UI contract in root AGENTS.md when implemented.",
         "testStrategy": "Chromium visual snapshots and keyboard flows at 2 viewport widths and light/dark; menu/Dialog and mutation E2E including reload; npm run check, test:e2e, test:firefox:lint; Firefox runtime under existing task 7; accessibility audit including accessible names, contrast and focus.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "9",
           "10"
@@ -502,44 +502,48 @@
             "title": "[P1] Polish manager composition and states",
             "description": "Refine explorer toolbar/sidebar/content density, hierarchy, icons, long-text behavior and selection/context-menu/dialog/empty/pending/error states.",
             "details": "Review current web-interface-guidelines; support small manager windows, light/dark and forced colors; no decorative dead controls. Keep visible focus and safe overlay/focus layering.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 11,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:07:32.507Z"
           },
           {
             "id": 2,
             "title": "[P1] Align popup/options shells without scope creep",
             "description": "Reuse new tokens and styled components in current popup/options skeleton, preserving existing navigation and not fabricating settings or popup operations.",
             "details": "Future popup actions are task 3.6; ru/en and user theme switching stay task 3.7. Do not duplicate implementations.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               "11.1"
             ],
             "parentTaskId": 11,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:07:32.529Z"
           },
           {
             "id": 3,
             "title": "[P1] Visual, accessibility and performance acceptance",
             "description": "Review at desktop/narrow widths, light/dark, keyboard/touch, focus restoration, contrast and reduced motion; add visual snapshots and regression checks.",
             "details": "Check accessible names/semantics (listbox/grid/marquee and nested controls), virtualized 150+ rows and bundle budget; grid >50 virtualization remains 3.9. Run npm run check, test:e2e, Firefox lint; Firefox runtime stays task 7.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               "11.1",
               "11.2"
             ],
             "parentTaskId": 11,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:07:32.537Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-09-27T19:07:32.537Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T19:04:40.482Z",
+      "lastModified": "2026-09-27T19:07:32.537Z",
       "taskCount": 11,
-      "completedCount": 5,
+      "completedCount": 6,
       "tags": [
         "master"
       ]

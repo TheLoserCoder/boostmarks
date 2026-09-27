@@ -56,6 +56,8 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
           ref={inputRef}
           className="ui-input path-input"
           aria-label="Путь к папке"
+          autoComplete="off"
+          spellCheck={false}
           value={value}
           onChange={event => setValue(event.target.value)}
           onKeyDown={event => {

@@ -20,6 +20,8 @@ export function SearchField({ value, onChange, label, placeholder, clearLabel }:
         type="search"
         aria-label={label}
         placeholder={placeholder}
+        autoComplete="off"
+        spellCheck={false}
         value={value}
         onChange={event => onChange(event.target.value)}
         onKeyDown={event => {
