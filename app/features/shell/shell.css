@@ -37,17 +37,29 @@ button:focus-visible {
   opacity: 0.8;
 }
 
-.tree {
+.panes {
+  display: grid;
+  grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.sidebar {
+  border-right: 1px solid rgb(127 127 127 / 40%);
+  padding-right: 0.5rem;
+}
+
+.folder-tree {
   list-style: none;
-  margin: 0.5rem 0;
+  margin: 0;
   padding-left: 1rem;
 }
 
-.tree-node {
-  margin: 0.15rem 0;
+.sidebar > .folder-tree {
+  padding-left: 0;
 }
 
-.tree-toggle {
+.folder-link {
   background: none;
   border: none;
   color: inherit;
@@ -57,18 +69,59 @@ button:focus-visible {
   text-align: left;
 }
 
-.tree-toggle[aria-expanded='true']::before {
-  content: '▾ ';
+.folder-link[aria-current='page'] {
+  font-weight: 600;
+  text-decoration: underline;
 }
 
-.tree-toggle[aria-expanded='false']::before {
-  content: '▸ ';
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
 }
 
-.tree-separator {
+.breadcrumbs li:not(:last-child)::after {
+  content: ' /';
+  opacity: 0.6;
+}
+
+.breadcrumbs button {
+  background: none;
   border: none;
-  border-top: 1px solid currentColor;
-  opacity: 0.4;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.1rem 0.2rem;
+}
+
+.breadcrumbs button[aria-current='page'] {
+  font-weight: 600;
+}
+
+.content-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.content-item {
+  padding: 0.2rem 0;
+}
+
+.content-item > button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.1rem 0.2rem;
+}
+
+.empty-folder {
+  opacity: 0.8;
 }
 
 .error {

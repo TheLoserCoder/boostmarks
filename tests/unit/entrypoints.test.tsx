@@ -16,16 +16,16 @@ const emptyClient: ProjectionClient = {
 describe('extension pages', () => {
   it('offers navigation from the popup to the manager', () => {
     render(<PopupApp />);
-    expect(screen.getByRole('link', { name: 'ÐžÑ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¿Ñ€Ð¾Ð²Ð¾Ð´Ð½Ð¸Ðº' })).toHaveAttribute('href', '/manager.html');
+    expect(screen.getByRole('link', { name: 'Открыть проводник' })).toHaveAttribute('href', '/manager.html');
   });
 
   it('labels the manager main region', () => {
     render(<ManagerApp client={emptyClient} />);
-    expect(screen.getByRole('main')).toHaveAccessibleName('ÐŸÑ€Ð¾Ð²Ð¾Ð´Ð½Ð¸Ðº Ð·Ð°ÐºÐ»Ð°Ð´Ð¾Ðº');
+    expect(screen.getByRole('main')).toHaveAccessibleName('Проводник закладок');
   });
 
   it('labels the options main region', () => {
     render(<OptionsApp />);
-    expect(screen.getByRole('main')).toHaveAccessibleName('ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸');
+    expect(screen.getByRole('main')).toHaveAccessibleName('Настройки');
   });
 });

@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { ProjectionClient } from '../application/ports';
-import { buildTree, topLevelEntries, type BookmarkTree } from '../domain/tree';
+import { topLevelFolders } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
-import { BookmarkTreeView } from './BookmarkTreeView';
+import { FolderContent } from './FolderContent';
+import { FolderTree } from './FolderTree';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -16,15 +17,19 @@ function hasContent(nodes: BookmarkNode[]): boolean {
 
 export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
   const [status, setStatus] = useState<Status>('loading');
-  const [trees, setTrees] = useState<BookmarkTree[]>([]);
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
+  const [nodes, setNodes] = useState<BookmarkNode[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
 
   const load = useCallback(async () => {
     try {
-      const nodes = await client.read();
-      setTrees(topLevelEntries(buildTree(nodes)));
-      setCount(hasContent(nodes) ? nodes.length : 0);
+      const loaded = await client.read();
+      setNodes(loaded);
+      setCount(hasContent(loaded) ? loaded.length : 0);
+      setSelectedId(current => {
+        if (current !== null && loaded.some(node => node.id === current)) return current;
+        return topLevelFolders(loaded)[0]?.id ?? null;
+      });
       setStatus('ready');
     } catch {
       setStatus('error');
@@ -36,19 +41,23 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
     return client.subscribe(() => void load());
   }, [client, load]);
 
-  const toggle = (id: string) => {
-    setExpanded(current => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const refresh = () => {
     client.requestSync();
     void load();
   };
+
+  if (status === 'error') {
+    return (
+      <section className="explorer" aria-label="Закладки">
+        <div role="alert" className="error">
+          <p>Не удалось прочитать локальную проекцию.</p>
+          <button type="button" onClick={() => void load()}>
+            Повторить
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="explorer" aria-label="Закладки">
@@ -61,19 +70,19 @@ export function BookmarkExplorer({ client }: BookmarkExplorerProps) {
         </p>
       </div>
 
-      {status === 'error' ? (
-        <div role="alert" className="error">
-          <p>Не удалось прочитать локальную проекцию.</p>
-          <button type="button" onClick={() => void load()}>
-            Повторить
-          </button>
-        </div>
-      ) : status === 'loading' ? (
+      {status === 'loading' ? (
         <p>Загрузка…</p>
       ) : count === 0 ? (
         <p className="empty">В этой проекции пока нет закладок</p>
       ) : (
-        <BookmarkTreeView entries={trees} expanded={expanded} onToggle={toggle} />
+        <div className="panes">
+          <nav aria-label="Папки" className="sidebar">
+            <FolderTree nodes={nodes} selectedId={selectedId} onSelect={setSelectedId} />
+          </nav>
+          {selectedId !== null ? (
+            <FolderContent nodes={nodes} folderId={selectedId} onSelect={setSelectedId} />
+          ) : null}
+        </div>
       )}
     </section>
   );

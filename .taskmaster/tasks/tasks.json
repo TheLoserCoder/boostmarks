@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "1",
+        "id": 1,
         "title": "Initialize WXT foundation and publish setup branch",
         "description": "Create a cross-browser React/TypeScript WXT skeleton without destroying legacy main/master; install project skills and Task Master, add TDD and Chromium E2E smoke checks, verify builds and Firefox lint, commit and push setup/wxt-foundation.",
         "details": "",
@@ -14,7 +14,7 @@
         "updatedAt": "2026-09-27T16:23:30.231Z"
       },
       {
-        "id": "2",
+        "id": 2,
         "title": "Build browser bookmark projection and synchronization",
         "description": "Model the native bookmark tree as source of truth; add Dexie projection, initial async hydration, onChanged/onMoved/onRemoved reconciliation including deleted descendants, and UI that renders cached data before background wakes.",
         "details": "",
@@ -84,20 +84,94 @@
         "updatedAt": "2026-09-27T16:53:41.351Z"
       },
       {
-        "id": "3",
+        "id": 3,
         "title": "Implement accessible bookmark explorer and popup operations",
         "description": "Create side navigation, two panes, tabs, paths, list/table/grid, virtualized large views, keyboard selection, rectangle selection, dnd-kit DnD and essential popup actions; add ru/en and theme settings.",
         "details": "",
         "testStrategy": "Test-first component interactions and keyboard accessibility; Chromium/Firefox extension smoke tests, reduced-motion and large tree benchmarks.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "2"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Two-pane explorer shell with folder navigation and breadcrumbs",
+            "description": "Pure path helpers (children of folder, breadcrumb chain, visible top-level folders) plus UI: sidebar folder tree, content pane for the selected folder, breadcrumb navigation, cache-first loading kept.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 2,
+            "title": "Content views: list, table and grid with persisted preference",
+            "description": "Three renderings of the current folder children with a view switcher; preference survives reload with a versioned localStorage key and safe fallback for unknown values.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 3,
+            "title": "Virtualized rendering for large folders",
+            "description": "TanStack Virtual for list/table rows with measured row heights, stable keys and content-visibility fallback; keep accessibility (roving focus) intact.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 4,
+            "title": "Selection model and keyboard navigation",
+            "description": "Click/ctrl/shift selection, select-all, marquee rectangle selection across a pane, arrow/Home/End navigation, aria-selected and focus management.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 5,
+            "title": "Drag and drop move with dnd-kit",
+            "description": "Move bookmarks and folders onto folders or positions with keyboard-accessible alternative (menu action), optimistic UI plus reconcile on browser events and conflict handling.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 6,
+            "title": "Popup essential operations",
+            "description": "Compact popup: current page bookmark action, recent/most-used list, quick search entry, open-manager navigation, accessible labels and focus order.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 7,
+            "title": "Locale ru/en and theme switching",
+            "description": "Minimal i18n layer with ru/en dictionaries for the extension UI, language preference, and light/dark/system theme with custom tokens; no hardcoded strings left in explorer.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 8,
+            "title": "Explorer end-to-end and accessibility verification",
+            "description": "Playwright flow: navigate folders via breadcrumbs, switch views, select multiple, move a bookmark, verify persistence after reload; axe-style checks for the main regions.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          }
+        ],
+        "updatedAt": "2026-09-27T16:55:46.440Z"
       },
       {
-        "id": "4",
+        "id": 4,
         "title": "Add rules, metadata, search and undo/redo",
         "description": "Port useful tag/domain concepts from legacy source via isolated use cases; tags/descriptions, domain rules, MiniSearch worker, structured filters, reversible commands and external-conflict detection.",
         "details": "",
@@ -110,7 +184,7 @@
         "subtasks": []
       },
       {
-        "id": "5",
+        "id": 5,
         "title": "Add capture features, encrypted private tree and export",
         "description": "Create opt-in content script for scroll/text/image capture, screenshot/archive adapters and least-privilege permissions; encrypted virtual folders separate from native bookmarks; import/export and backup.",
         "details": "",
@@ -124,7 +198,7 @@
         "subtasks": []
       },
       {
-        "id": "6",
+        "id": 6,
         "title": "Implement local statistics and future sync architecture",
         "description": "Design local-only statistics with analytics-strategy, transparent metric definitions and no telemetry by default; then evaluate Google Drive metadata sync and conflicts separately.",
         "details": "",
@@ -137,7 +211,7 @@
         "subtasks": []
       },
       {
-        "id": "7",
+        "id": 7,
         "title": "Establish Firefox runtime E2E and performance gates",
         "description": "Add isolated Firefox profile with installed add-on via web-ext and browser automation, plus Chromium and Firefox end-to-end CRUD, restart, Dexie and benchmark suites; gate regressions on measured thresholds.",
         "details": "",
@@ -152,12 +226,14 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T16:53:41.351Z",
+      "lastModified": "2026-09-27T16:55:46.440Z",
       "taskCount": 7,
       "completedCount": 2,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-09-27T16:55:46.462Z",
+      "description": "Tasks for master context"
     }
   }
 }
