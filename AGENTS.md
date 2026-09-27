@@ -2,15 +2,17 @@
 
 ## Current state
 
-The extension now has a working **bookmark projection**: the background service worker mirrors the native bookmark tree into IndexedDB (Dexie) and follows browser changes; the manager page renders that projection (cache-first) as an accessible tree. Capture, tags/search, private folders and the two-pane explorer are not built yet. `src/`, `web-ext/` and `webpack.config.js` are unported legacy code from `main`, kept for reference. Do not import legacy modules directly into new use cases. The other remote branch, `master`, contains an even older prototype. Do not delete either branch without explicit approval.
+The extension now has a working **bookmark projection**: the background service worker mirrors the native bookmark tree into IndexedDB (Dexie) and follows browser changes; the manager page renders that projection (cache-first) as an Explorer-style two-pane browser with quick links, breadcrumbs with an editable folder path, substring search and list/table/grid views. Capture, ranked/tag search, private folders and DnD are not built yet. `src/`, `web-ext/` and `webpack.config.js` are unported legacy code from `main`, kept for reference. Do not import legacy modules directly into new use cases. The other remote branch, `master`, contains an even older prototype. Do not delete either branch without explicit approval.
 
 ## Architecture and boundaries
 
 - `app/features/bookmarks/` is the first capability module and the template for new ones: `domain/` (pure rules: tree flatten/assemble, event reconciliation), `application/` (ports and the `bookmarkSync` use case), `adapters/` (Dexie store, `browser.bookmarks` source, page client) and `ui/` (React components receiving a `ProjectionClient` prop). Entrypoints are composition roots and own concrete wiring.
 - WXT entrypoints live in `app/entrypoints/`: popup, manager, options and background. A content script will be added when opt-in capture is designed; do not request access to all URLs for an unused script.
+- Manager UI: icon-first, Windows Explorer-inspired layout using one icon set (`lucide-react`). Quick access = pinned ids persisted under `boostmarks:shortcuts:v1` plus top-level folders, resolved from the projection with missing targets dropped. The address bar resolves folder paths by name (backslash separator); duplicate names are reported as ambiguous, never guessed. Search is a plain substring filter over the projection until task 4 adds the worker and ranking.
 - Native browser bookmarks are the source of truth for the ordinary tree. Dexie holds the projection and freshness metadata. Pages render the last saved projection before the background reconciles. `onRemoved` fires only for the removed folder, so descendants are pruned from the stored projection explicitly. A private tree must be encrypted and separate from native bookmarks.
 - External bookmark calls do not participate in Dexie transactions; events are serialized through a single queue in `bookmarkSync`, and import completion triggers a full resync. Events for unknown ids are ignored and healed by the next hydration. Full Google Drive synchronization of native bookmarks requires a separate conflict design.
 - React performance: use `vercel-react-best-practices`; add virtualization, search worker and DnD only when their features are implemented and measured. Respect reduced motion and accessibility. Follow `clean-architecture` and `clean-code`.
+- Visual direction: aim for an intuitive, Windows Explorer-inspired interface with a strong emphasis on recognizable icons; pair icons with readable labels or accessible names rather than relying on icons alone.
 
 ## Checks and development
 

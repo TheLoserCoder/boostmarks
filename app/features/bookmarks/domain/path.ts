@@ -42,3 +42,60 @@ export function topLevelFolders(nodes: BookmarkNode[]): BookmarkNode[] {
 
   return [...candidates.values()].sort((a, b) => a.index - b.index || a.id.localeCompare(b.id));
 }
+
+export const PATH_SEPARATOR = '\\';
+
+export function formatFolderPath(nodes: BookmarkNode[], id: string): string {
+  return folderChain(nodes, id)
+    .map(node => node.title)
+    .join(PATH_SEPARATOR);
+}
+
+export type PathResolution =
+  | { ok: true; folderId: string }
+  | { ok: false; reason: 'empty' | 'not-found' | 'ambiguous' };
+
+/** Resolves a typed folder path (names joined with backslashes) without guessing between same-named folders. */
+export function resolveFolderPath(nodes: BookmarkNode[], input: string): PathResolution {
+  const segments = input
+    .split(PATH_SEPARATOR)
+    .map(segment => segment.trim())
+    .filter(segment => segment.length > 0);
+  if (segments.length === 0) return { ok: false, reason: 'empty' };
+
+  let candidates = topLevelFolders(nodes);
+  let current: BookmarkNode | undefined;
+  for (const segment of segments) {
+    const lower = segment.toLocaleLowerCase();
+    const matches = candidates.filter(node => node.title.toLocaleLowerCase() === lower);
+    if (matches.length === 0) return { ok: false, reason: 'not-found' };
+    if (matches.length > 1) return { ok: false, reason: 'ambiguous' };
+    current = matches[0]!;
+    candidates = childrenOf(nodes, current.id).filter(node => node.kind === 'folder');
+  }
+
+  return current === undefined ? { ok: false, reason: 'empty' } : { ok: true, folderId: current.id };
+}
+
+/** Sidebar list: pinned entries in their chosen order, then remaining top-level folders. */
+export function quickLinks(nodes: BookmarkNode[], pinnedIds: readonly string[]): BookmarkNode[] {
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  const links: BookmarkNode[] = [];
+  const seen = new Set<string>();
+
+  for (const id of pinnedIds) {
+    const node = byId.get(id);
+    if (node !== undefined && node.kind !== 'separator' && !seen.has(id)) {
+      links.push(node);
+      seen.add(id);
+    }
+  }
+  for (const folder of topLevelFolders(nodes)) {
+    if (!seen.has(folder.id)) {
+      links.push(folder);
+      seen.add(folder.id);
+    }
+  }
+
+  return links;
+}

@@ -89,7 +89,7 @@
         "description": "Create side navigation, two panes, tabs, paths, list/table/grid, virtualized large views, keyboard selection, rectangle selection, dnd-kit DnD and essential popup actions; add ru/en and theme settings.",
         "details": "",
         "testStrategy": "Test-first component interactions and keyboard accessibility; Chromium/Firefox extension smoke tests, reduced-motion and large tree benchmarks.",
-        "status": "in-progress",
+        "status": "deferred",
         "dependencies": [
           "2"
         ],
@@ -178,7 +178,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-09-27T17:02:01.834Z"
+        "updatedAt": "2026-09-27T17:39:21.367Z"
       },
       {
         "id": "4",
@@ -232,13 +232,109 @@
         ],
         "priority": "high",
         "subtasks": []
+      },
+      {
+        "id": "8",
+        "title": "Visual redesign: Explorer-style manager navigation and toolbar",
+        "description": "Priority visual/UX work for the bookmark manager. Keep the existing Dexie projection, folder navigation and list/table/grid modes. Build a Windows File Explorer-inspired layout: left quick-links rail with settings anchored at bottom, right bookmark content, breadcrumbs with an editable folder path above the content and adjacent working search. Intuitive, icon-forward design with visible labels and accessible interactions. Do not implement unrelated task-3 features (virtualization, DnD, selection, popup) as part of this work.",
+        "details": "New priority P0 after completed 3.1/3.2. Use the user-provided reference image as visual direction, not a pixel-perfect requirement. No native bookmark mutations for pinning shortcuts; store UI shortcut metadata separately. Existing search engine in task 4 remains future scope. All interactions must work with cached projection and react to background updates.",
+        "testStrategy": "TDD unit/component tests for quick-link persistence, folder/path navigation and search; Chromium extension E2E for navigation, settings, path entry, search and reload; npm run check; keyboard-only/accessibility/contrast/reduced-motion review; Firefox runtime coverage remains task 7.",
+        "status": "done",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "[P0] Define and build Explorer-style visual shell",
+            "description": "Rework manager hierarchy using the attached image as visual direction, not pixel-perfect copy: persistent left navigation rail; right content pane with a top row for breadcrumbs/editable address and adjacent search; bookmarks below. Retain existing folder data, cache-first render and list/table/grid switch. Reserve a fixed bottom slot for Settings in the sidebar. Clear selected/current location; adaptable widths and narrow-window fallback.",
+            "details": "Start by mapping existing BookmarkExplorer, FolderTree, FolderContent and shell.css. Establish icon/spacing/type/color states and a keyboard/focus order before refactoring. Avoid decorative controls that do nothing. Deliver an intuitive icon-first interface with readable labels/tooltips, never icon-only meaning.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 8,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T17:51:41.462Z"
+          },
+          {
+            "id": 2,
+            "title": "[P0] Add sidebar quick links and anchored Settings",
+            "description": "Sidebar quick links to useful locations (top-level bookmark folders and user-pinned folders/bookmarks); a Settings button remains at the bottom even when links scroll. Folder shortcuts navigate the right pane; bookmark shortcuts open safely; Settings opens the existing options page.",
+            "details": "Keep pinned shortcuts as local UI metadata keyed by native bookmark IDs; do not duplicate or mutate browser bookmarks. Support pin/unpin, stable ordering and persistence across reload; gracefully handle renamed/deleted targets and empty state. Icons must have text/accessible names and visible active/focus states.",
+            "status": "done",
+            "dependencies": [
+              "8.1"
+            ],
+            "parentTaskId": 8,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T17:51:41.482Z"
+          },
+          {
+            "id": 3,
+            "title": "[P0] Add breadcrumb and editable folder address",
+            "description": "Above the right pane, show clickable breadcrumbs that toggle into a path field (Explorer-style). Enter resolves a folder path and opens it; Escape cancels; invalid paths keep the current folder and show inline feedback; returning to breadcrumbs restores the canonical path.",
+            "details": "Treat addresses as bookmark folder paths, never website URLs or OS filesystem paths. Define escaping/disambiguation for duplicate folder names (offer a chooser or explicit ambiguity error; never silently select the wrong folder). Sync path, selection, sidebar and content after navigation, rename, deletion and page reload. Preserve keyboard focus.",
+            "status": "done",
+            "dependencies": [
+              "8.1"
+            ],
+            "parentTaskId": 8,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T17:51:41.498Z"
+          },
+          {
+            "id": 4,
+            "title": "[P0] Put working bookmark search beside address",
+            "description": "Place a labeled search field beside the address/breadcrumb control. Search title and URL across the cached native-bookmark projection with useful result names and folder locations; clear search returns to the current folder. Show empty/loading/error states and keep search and address controls visually distinct.",
+            "details": "Start with simple substring search and measured responsiveness for large fixtures; debounce or defer filtering as needed. No advanced query syntax, tags or worker yet: those remain in task 4. Keyboard: focus shortcut if not conflicting, Enter on result opens or navigates appropriately, Escape clears/returns focus; support screen-reader result count.",
+            "status": "done",
+            "dependencies": [
+              "8.3"
+            ],
+            "parentTaskId": 8,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T17:51:41.515Z"
+          },
+          {
+            "id": 5,
+            "title": "[P1] Visual polish, responsive behavior and icon accessibility",
+            "description": "Polish iconography, hover/selected/focus states, contrast, compact spacing, overflow and adaptable layout at extension-manager window widths. Retain list/table/grid controls, distinguish folders vs links without relying only on color, and avoid excessive motion.",
+            "details": "Prefer one consistent icon set (no emoji as production icons). Verify tooltips/visible labels and accessible names, 44px-ish comfortable hit targets where practical, reduced-motion preference, long names and narrow windows. Review against current web-design-guidelines.",
+            "status": "done",
+            "dependencies": [
+              "8.2",
+              "8.3",
+              "8.4"
+            ],
+            "parentTaskId": 8,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T17:51:41.530Z"
+          },
+          {
+            "id": 6,
+            "title": "[P1] Verify redesigned manager in real extension and document UX contract",
+            "description": "Cover sidebar quick links/settings, breadcrumb clicks and path entry (including duplicate/invalid paths), search/clear, reload persistence and all three existing content views with tests. Validate Chromium extension visually and with keyboard-only navigation; leave Firefox runtime to task 7.",
+            "details": "Write failing behavior tests before implementation; use current projection client and fake-indexeddb for storage changes. Run npm run check, npm run test:e2e and Firefox lint. Update root AGENTS.md only if an important architecture constraint is introduced.",
+            "status": "done",
+            "dependencies": [
+              "8.2",
+              "8.3",
+              "8.4",
+              "8.5"
+            ],
+            "parentTaskId": 8,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T17:51:41.547Z"
+          }
+        ],
+        "updatedAt": "2026-09-27T17:51:41.547Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T17:02:01.834Z",
-      "taskCount": 7,
-      "completedCount": 2,
+      "lastModified": "2026-09-27T17:51:41.548Z",
+      "taskCount": 8,
+      "completedCount": 3,
       "tags": [
         "master"
       ]
