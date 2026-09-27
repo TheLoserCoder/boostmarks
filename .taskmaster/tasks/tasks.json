@@ -19,12 +19,69 @@
         "description": "Model the native bookmark tree as source of truth; add Dexie projection, initial async hydration, onChanged/onMoved/onRemoved reconciliation including deleted descendants, and UI that renders cached data before background wakes.",
         "details": "",
         "testStrategy": "Unit tests for projection/reconciliation; fake-indexeddb integration and real-browser checks; startup timing at 10k/50k.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "1"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Domain projection model and reconciliation rules",
+            "description": "Pure functions: flattening getTree() into nodes, tree assembly, partial onChanged merge, onCreated/onMoved application, cascade removal of descendants (onRemoved fires only for the folder), reorder handling. No browser/Dexie imports.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2,
+            "updatedAt": "2026-09-27T16:40:47.290Z",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Dexie projection store adapter",
+            "description": "Dexie v1 schema: nodes keyed by id, meta records for snapshot freshness; readAll/replaceAll/upsert/remove plus meta timestamps. Layout must survive thousands of nodes.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T16:40:47.313Z"
+          },
+          {
+            "id": 3,
+            "title": "Background bookmark synchronizer and messaging",
+            "description": "Initial hydration from bookmarks.getTree(), event subscriptions (created/changed/moved/removed/reordered/import) applying domain rules and persisting diffs; broadcast change notifications to open pages; expose read-repair resync.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T16:53:41.322Z"
+          },
+          {
+            "id": 4,
+            "title": "Manager explorer renders cached projection first",
+            "description": "Manager page reads the Dexie projection before background wakes, shows loading/sync state, renders an accessible tree (folders expandable, bookmarks open in new tab), refreshes on background broadcasts. Popup keeps compact links.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T16:53:41.335Z"
+          },
+          {
+            "id": 5,
+            "title": "Projection performance baseline at 10k and 50k nodes",
+            "description": "Pure normalize/build timing and IndexedDB read timing with generated fixtures; document measured numbers instead of invented thresholds.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T16:53:41.351Z"
+          }
+        ],
+        "updatedAt": "2026-09-27T16:53:41.351Z"
       },
       {
         "id": "3",
@@ -95,9 +152,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T16:23:30.231Z",
+      "lastModified": "2026-09-27T16:53:41.351Z",
       "taskCount": 7,
-      "completedCount": 1,
+      "completedCount": 2,
       "tags": [
         "master"
       ]

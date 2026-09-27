@@ -20,7 +20,58 @@ a {
   margin: 0.25rem 1rem 0.25rem 0;
 }
 
-a:focus-visible {
+a:focus-visible,
+button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
+}
+
+.explorer .toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.explorer .status {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.tree {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding-left: 1rem;
+}
+
+.tree-node {
+  margin: 0.15rem 0;
+}
+
+.tree-toggle {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.15rem 0.25rem;
+  text-align: left;
+}
+
+.tree-toggle[aria-expanded='true']::before {
+  content: '▾ ';
+}
+
+.tree-toggle[aria-expanded='false']::before {
+  content: '▸ ';
+}
+
+.tree-separator {
+  border: none;
+  border-top: 1px solid currentColor;
+  opacity: 0.4;
+}
+
+.error {
+  border: 1px solid currentColor;
+  padding: 1rem;
 }

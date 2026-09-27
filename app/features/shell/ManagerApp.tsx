@@ -1,10 +1,12 @@
 import React from 'react';
+import type { ProjectionClient } from '../bookmarks/application/ports';
+import { BookmarkExplorer } from '../bookmarks/ui/BookmarkExplorer';
 
-export function ManagerApp() {
+export function ManagerApp({ client }: { client: ProjectionClient }) {
   return (
     <main className="page" aria-labelledby="manager-title">
       <h1 id="manager-title">Проводник закладок</h1>
-      <p>Основа расширения готова. Дерево закладок появится на следующем этапе.</p>
+      <BookmarkExplorer client={client} />
     </main>
   );
 }
