@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "analytics-strategy": {
+      "source": "TheLoserCoder/opencode-tools",
+      "sourceType": "github",
+      "skillPath": "skills/analytics-strategy/SKILL.md",
+      "computedHash": "7a9db2c483748a368deb3c87360d75adb43bb08688aa835e22fc40bebe4b00ad"
+    },
+    "test-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/test-driven-development/SKILL.md",
+      "computedHash": "3cfe4ebb6fa7288f668d87880d279c8e48f7a92b63415e296857060f5ce22e05"
+    },
+    "vercel-react-best-practices": {
+      "source": "TheLoserCoder/opencode-tools",
+      "sourceType": "github",
+      "skillPath": "skills/vercel-react-best-practices/SKILL.md",
+      "computedHash": "451c3cb0e335a2a9a6a1beaa54c22decbdb942f4104ae3d7b6d1979114986d79"
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Initialize WXT foundation and publish setup branch",
+        "description": "Create a cross-browser React/TypeScript WXT skeleton without destroying legacy main/master; install project skills and Task Master, add TDD and Chromium E2E smoke checks, verify builds and Firefox lint, commit and push setup/wxt-foundation.",
+        "details": "",
+        "testStrategy": "npm run check; npm run test:e2e; npm run test:firefox:lint; git status and remote branch verified.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-09-27T16:23:30.231Z"
+      },
+      {
+        "id": "2",
+        "title": "Build browser bookmark projection and synchronization",
+        "description": "Model the native bookmark tree as source of truth; add Dexie projection, initial async hydration, onChanged/onMoved/onRemoved reconciliation including deleted descendants, and UI that renders cached data before background wakes.",
+        "details": "",
+        "testStrategy": "Unit tests for projection/reconciliation; fake-indexeddb integration and real-browser checks; startup timing at 10k/50k.",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "3",
+        "title": "Implement accessible bookmark explorer and popup operations",
+        "description": "Create side navigation, two panes, tabs, paths, list/table/grid, virtualized large views, keyboard selection, rectangle selection, dnd-kit DnD and essential popup actions; add ru/en and theme settings.",
+        "details": "",
+        "testStrategy": "Test-first component interactions and keyboard accessibility; Chromium/Firefox extension smoke tests, reduced-motion and large tree benchmarks.",
+        "status": "pending",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "4",
+        "title": "Add rules, metadata, search and undo/redo",
+        "description": "Port useful tag/domain concepts from legacy source via isolated use cases; tags/descriptions, domain rules, MiniSearch worker, structured filters, reversible commands and external-conflict detection.",
+        "details": "",
+        "testStrategy": "Vitest contracts; Dexie fake-indexeddb migration and operations; cross-browser integration and 10k/50k search regression.",
+        "status": "pending",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "5",
+        "title": "Add capture features, encrypted private tree and export",
+        "description": "Create opt-in content script for scroll/text/image capture, screenshot/archive adapters and least-privilege permissions; encrypted virtual folders separate from native bookmarks; import/export and backup.",
+        "details": "",
+        "testStrategy": "Permission and security tests, encryption round-trip and migration tests, true browser coverage for capture and restore.",
+        "status": "pending",
+        "dependencies": [
+          "3",
+          "4"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "6",
+        "title": "Implement local statistics and future sync architecture",
+        "description": "Design local-only statistics with analytics-strategy, transparent metric definitions and no telemetry by default; then evaluate Google Drive metadata sync and conflicts separately.",
+        "details": "",
+        "testStrategy": "Tests on fixture event streams, consent/privacy review, cross-browser storage checks and sync conflict tests before enabling remote operations.",
+        "status": "pending",
+        "dependencies": [
+          "4"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "7",
+        "title": "Establish Firefox runtime E2E and performance gates",
+        "description": "Add isolated Firefox profile with installed add-on via web-ext and browser automation, plus Chromium and Firefox end-to-end CRUD, restart, Dexie and benchmark suites; gate regressions on measured thresholds.",
+        "details": "",
+        "testStrategy": "Run both real browser suites, Firefox web-ext lint, a11y review, 10k/50k datasets, record baselines.",
+        "status": "pending",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "high",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-09-27T16:23:30.231Z",
+      "taskCount": 7,
+      "completedCount": 1,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}
