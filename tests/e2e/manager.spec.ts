@@ -16,7 +16,7 @@ test('manager projects real browser bookmarks and follows changes', async () => 
     await content.getByRole('button', { name: `Закрепить «${created.folderTitle}»` }).click();
     await expect(quickAccess.getByRole('button', { name: `Открепить «${created.folderTitle}»` })).toBeVisible();
 
-    await content.getByRole('button', { name: created.folderTitle, exact: true }).dblclick();
+    await content.getByRole('option', { name: created.folderTitle, exact: true }).dblclick();
     await expect(content.getByRole('link', { name: created.bookmarkTitle })).toBeVisible();
 
     const bookmarkOption = content.getByRole('option', { name: created.bookmarkTitle });

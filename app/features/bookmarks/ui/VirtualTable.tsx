@@ -11,6 +11,8 @@ interface VirtualTableProps<T> {
   renderCells: (item: T, index: number) => ReactNode;
   label: string;
   controller?: RowSelectionController;
+  /** Overrides the row key handling, e.g. to open the context menu from the keyboard. */
+  rowKeyDown?: (event: React.KeyboardEvent) => void;
 }
 
 interface Row<T> {
@@ -33,6 +35,7 @@ export function VirtualTable<T>({
   renderCells,
   label,
   controller,
+  rowKeyDown,
 }: VirtualTableProps<T>) {
   const internalRef = useRef<HTMLDivElement>(null);
   const parentRef = controller?.scrollRef ?? internalRef;
@@ -127,7 +130,7 @@ export function VirtualTable<T>({
                   controller
                     ? event => {
                         event.stopPropagation();
-                        controller.onKeyDown(event);
+                        (rowKeyDown ?? controller.onKeyDown)(event);
                       }
                     : undefined
                 }

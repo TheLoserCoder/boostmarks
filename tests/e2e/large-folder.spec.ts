@@ -15,7 +15,7 @@ test('large folders render only a window of rows and scroll to the end', async (
     await page.getByRole('navigation', { name: 'Быстрый доступ' }).getByRole('button', { name: created.barTitle }).click();
 
     const content = page.getByRole('region', { name: 'Содержимое папки' });
-    await content.getByRole('button', { name: created.folderTitle, exact: true }).dblclick();
+    await content.getByRole('option', { name: created.folderTitle, exact: true }).dblclick();
 
     const list = page.getByRole('listbox', { name: 'Список' });
     const firstOption = list.getByRole('option', { name: `${created.folderTitle} 0000` });

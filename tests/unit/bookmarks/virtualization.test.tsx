@@ -2,8 +2,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import React from 'react';
 import { BookmarkExplorer } from '../../../app/features/bookmarks/ui/BookmarkExplorer';
+import type { ProjectionClient } from '../../../app/features/bookmarks/application/ports';
 import type { BookmarkNode } from '../../../app/features/bookmarks/domain/types';
-import { fakeClient, node } from './support/fixtures';
+import { fakeClient, fakeCommands, node } from './support/fixtures';
 
 const LARGE_COUNT = 5000;
 
@@ -35,10 +36,13 @@ function smallFolder(count: number): BookmarkNode[] {
   ];
 }
 
+function renderExplorer(client: ProjectionClient) {
+  return render(<BookmarkExplorer client={client} commands={fakeCommands().commands} />);
+}
+
 async function content() {
   return within(await screen.findByRole('region', { name: 'Содержимое папки' }));
 }
-
 async function openFolder(title: string) {
   const pane = await content();
   fireEvent.doubleClick(await pane.findByRole('option', { name: title }));
@@ -95,7 +99,7 @@ afterAll(() => {
 describe('large folder virtualization', () => {
   it('renders only a window of list rows but reports the true size', async () => {
     const { client } = fakeClient(largeFolder('Заметка', LARGE_COUNT));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Большая папка');
 
@@ -112,7 +116,7 @@ describe('large folder virtualization', () => {
 
   it('reveals later rows after scrolling instead of rendering everything at once', async () => {
     const { client } = fakeClient(largeFolder('Заметка', LARGE_COUNT));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Большая папка');
 
@@ -128,7 +132,7 @@ describe('large folder virtualization', () => {
 
   it('keeps rendering small folders in full', async () => {
     const { client } = fakeClient(smallFolder(6));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Маленькая папка');
 
@@ -139,7 +143,7 @@ describe('large folder virtualization', () => {
 
   it('windows table rows while keeping aria-rowcount authoritative', async () => {
     const { client } = fakeClient(largeFolder('Заметка', LARGE_COUNT));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Большая папка');
     fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
@@ -154,7 +158,7 @@ describe('large folder virtualization', () => {
 
   it('windows long search result lists', async () => {
     const { client } = fakeClient(largeFolder('Заметка', LARGE_COUNT));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'Заметка' } });
@@ -167,7 +171,7 @@ describe('large folder virtualization', () => {
 
   it('keeps the focused row rendered while walking through a virtualized folder', async () => {
     const { client } = fakeClient(largeFolder('Заметка', LARGE_COUNT));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await screen.findByRole('navigation', { name: 'Быстрый доступ' });
     await openFolder('Большая папка');
 

@@ -47,12 +47,14 @@ export interface CreatedBookmarks {
 interface ChromeBookmarkTreeNode {
   id: string;
   title: string;
+  url?: string;
   children?: ChromeBookmarkTreeNode[];
 }
 
 interface ChromeBookmarksApi {
   bookmarks: {
     getTree(): Promise<ChromeBookmarkTreeNode[]>;
+    search(query: string): Promise<ChromeBookmarkTreeNode[]>;
     create(details: { parentId: string; title: string; url?: string }): Promise<ChromeBookmarkTreeNode>;
     update(id: string, changes: { title?: string }): Promise<unknown>;
     removeTree(id: string): Promise<void>;
@@ -92,6 +94,17 @@ export async function renameBookmark(page: Page, id: string, title: string) {
 
 export async function removeFolderTree(page: Page, id: string) {
   await page.evaluate(id => (globalThis as unknown as ChromeGlobal).chrome.bookmarks.removeTree(id), id);
+}
+
+/** Confirms a folder really exists in the native browser tree, not just in the projection. */
+export async function countNativeFoldersByTitle(page: Page, title: string): Promise<number> {
+  return page.evaluate(
+    title =>
+      (globalThis as unknown as ChromeGlobal).chrome.bookmarks
+        .search(title)
+        .then(nodes => nodes.filter(node => node.title === title && node.url === undefined).length),
+    title,
+  );
 }
 
 export interface SeededLargeFolder {

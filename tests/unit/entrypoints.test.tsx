@@ -4,13 +4,17 @@ import { describe, expect, it } from 'vitest';
 import { PopupApp } from '../../app/features/shell/PopupApp';
 import { ManagerApp } from '../../app/features/shell/ManagerApp';
 import { OptionsApp } from '../../app/features/shell/OptionsApp';
-import type { ProjectionClient } from '../../app/features/bookmarks/application/ports';
+import type { BookmarkCommands, ProjectionClient } from '../../app/features/bookmarks/application/ports';
 
 const emptyClient: ProjectionClient = {
   read: async () => [],
   readFreshness: async () => undefined,
   requestSync: () => undefined,
   subscribe: () => () => undefined,
+};
+
+const emptyCommands: BookmarkCommands = {
+  createFolder: async () => ({ ok: false, reason: 'failed' }),
 };
 
 describe('extension pages', () => {
@@ -20,7 +24,7 @@ describe('extension pages', () => {
   });
 
   it('labels the manager main region', () => {
-    render(<ManagerApp client={emptyClient} />);
+    render(<ManagerApp client={emptyClient} commands={emptyCommands} />);
     expect(screen.getByRole('main')).toHaveAccessibleName('Проводник закладок');
   });
 

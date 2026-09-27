@@ -2,10 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { BookmarkExplorer } from '../../../app/features/bookmarks/ui/BookmarkExplorer';
+import type { ProjectionClient } from '../../../app/features/bookmarks/application/ports';
 import type { BookmarkNode } from '../../../app/features/bookmarks/domain/types';
-import { fakeClient, node } from './support/fixtures';
+import { fakeClient, fakeCommands, node } from './support/fixtures';
 
 beforeEach(() => localStorage.clear());
+
+function renderExplorer(client: ProjectionClient) {
+  return render(<BookmarkExplorer client={client} commands={fakeCommands().commands} />);
+}
 
 const tree: BookmarkNode[] = [
   node({ id: '0', kind: 'folder', title: '' }),
@@ -27,7 +32,7 @@ async function content() {
 describe('BookmarkExplorer two-pane shell', () => {
   it('shows top-level folders in the sidebar and the first folder content in the pane', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     const folders = await sidebar();
     expect(await folders.findByRole('button', { name: 'Панель закладок' })).toHaveAttribute('aria-current', 'page');
@@ -35,15 +40,15 @@ describe('BookmarkExplorer two-pane shell', () => {
 
     const pane = await content();
     expect(pane.getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
-    expect(pane.getByRole('button', { name: 'Работа' })).toBeInTheDocument();
+    expect(pane.getByRole('option', { name: 'Работа' })).toBeInTheDocument();
   });
 
   it('navigates into a nested folder and back through breadcrumbs', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await sidebar();
 
-    fireEvent.doubleClick((await content()).getByRole('button', { name: 'Работа' }));
+    fireEvent.doubleClick((await content()).getByRole('option', { name: 'Работа' }));
 
     const breadcrumbs = within(screen.getByRole('navigation', { name: 'Путь' }));
     expect(breadcrumbs.getByRole('button', { name: 'Работа' })).toHaveAttribute('aria-current', 'page');
@@ -55,7 +60,7 @@ describe('BookmarkExplorer two-pane shell', () => {
 
   it('opens bookmarks safely in a new tab', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     const link = await (await content()).findByRole('link', { name: 'Boostmarks' });
     expect(link).toHaveAttribute('href', 'https://example.com');
@@ -65,14 +70,14 @@ describe('BookmarkExplorer two-pane shell', () => {
 
   it('shows an explicit empty state when the browser tree has no user folders', async () => {
     const { client } = fakeClient([node({ id: '0', kind: 'folder', title: '' })]);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     expect(await screen.findByText('В этой проекции пока нет закладок')).toBeInTheDocument();
   });
 
   it('asks the background to resync when the user presses refresh', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await sidebar();
 
     fireEvent.click(screen.getByRole('button', { name: 'Обновить' }));
@@ -82,7 +87,7 @@ describe('BookmarkExplorer two-pane shell', () => {
 
   it('re-reads the projection when the background reports a change', async () => {
     const { client, notify, setNodes } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await sidebar();
 
     setNodes([...tree, node({ id: 'fresh', parentId: 'bar', title: 'Новая', url: 'https://new.dev', index: 2 })]);
@@ -93,9 +98,9 @@ describe('BookmarkExplorer two-pane shell', () => {
 
   it('falls back to the first folder when the selected folder disappears', async () => {
     const { client, notify, setNodes } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await sidebar();
-    fireEvent.doubleClick((await content()).getByRole('button', { name: 'Работа' }));
+    fireEvent.doubleClick((await content()).getByRole('option', { name: 'Работа' }));
     expect((await content()).getByRole('link', { name: 'Глубокий' })).toBeInTheDocument();
 
     setNodes(tree.filter(entry => entry.id !== 'folder' && entry.id !== 'deep'));
@@ -107,7 +112,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   it('reports sync errors to the user and recovers on retry', async () => {
     const { client } = fakeClient(tree);
     (client.read as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('IndexedDB unavailable'));
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось прочитать локальную проекцию');
     fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
@@ -118,7 +123,7 @@ describe('BookmarkExplorer two-pane shell', () => {
 describe('BookmarkExplorer content views', () => {
   it('switches between list, table and grid renderings', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     expect(screen.getByRole('listbox', { name: 'Список' })).toBeInTheDocument();
@@ -130,17 +135,17 @@ describe('BookmarkExplorer content views', () => {
 
     fireEvent.click(screen.getByRole('radio', { name: 'Сетка' }));
     expect(screen.getByRole('listbox', { name: 'Плитка' })).toBeInTheDocument();
-    expect(within(screen.getByRole('listbox', { name: 'Плитка' })).getByRole('button', { name: 'Работа' })).toBeInTheDocument();
+    expect(within(screen.getByRole('listbox', { name: 'Плитка' })).getByRole('option', { name: 'Работа' })).toBeInTheDocument();
   });
 
   it('remembers the chosen view across renders', async () => {
     const { client } = fakeClient(tree);
-    const first = render(<BookmarkExplorer client={client} />);
+    const first = renderExplorer(client);
     await content();
     fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
     first.unmount();
 
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     await waitFor(() => expect(screen.getByRole('grid', { name: 'Содержимое папки' })).toBeInTheDocument());
   });
@@ -149,7 +154,7 @@ describe('BookmarkExplorer content views', () => {
 describe('BookmarkExplorer address bar', () => {
   it('edits the folder path, opens the resolved folder and returns to breadcrumbs', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.click(screen.getByRole('button', { name: 'Изменить путь' }));
@@ -165,7 +170,7 @@ describe('BookmarkExplorer address bar', () => {
 
   it('keeps the current folder and explains an unknown path', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.click(screen.getByRole('button', { name: 'Изменить путь' }));
@@ -178,7 +183,7 @@ describe('BookmarkExplorer address bar', () => {
 
   it('cancels editing with Escape', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.click(screen.getByRole('button', { name: 'Изменить путь' }));
@@ -192,7 +197,7 @@ describe('BookmarkExplorer address bar', () => {
 describe('BookmarkExplorer search', () => {
   it('finds bookmarks by title and url and shows the containing folder', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'deep' } });
@@ -205,7 +210,7 @@ describe('BookmarkExplorer search', () => {
 
   it('clears the query and returns to the folder content', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'deep.dev' } });
@@ -219,7 +224,7 @@ describe('BookmarkExplorer search', () => {
 
   it('explains when nothing matches', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'zzz-нет-такого' } });
@@ -231,7 +236,7 @@ describe('BookmarkExplorer search', () => {
 describe('BookmarkExplorer quick links', () => {
   it('pins a content item into the sidebar and remembers it', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await content();
 
     fireEvent.click(screen.getByRole('button', { name: 'Закрепить «Boostmarks»' }));
@@ -244,7 +249,7 @@ describe('BookmarkExplorer quick links', () => {
   it('unpins a shortcut from the sidebar', async () => {
     localStorage.setItem('boostmarks:shortcuts:v1', '["bookmark"]');
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     const links = await sidebar();
     fireEvent.click(await links.findByRole('button', { name: 'Открепить «Boostmarks»' }));
@@ -255,7 +260,7 @@ describe('BookmarkExplorer quick links', () => {
 
   it('offers a settings link anchored in the sidebar', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     await sidebar();
 
     expect(await screen.findByRole('link', { name: 'Настройки' })).toHaveAttribute('href', '/options.html');
@@ -279,7 +284,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('selects a row on click without navigating or opening', async () => {
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
 
     const pane = await content();
     const work = pane.getByRole('option', { name: 'Работа' });
@@ -293,7 +298,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
 
   it('toggles with ctrl, extends with shift and clears with Escape', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     const pane = await content();
     const work = pane.getByRole('option', { name: 'Работа' });
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
@@ -318,7 +323,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
 
   it('selects all rows with ctrl+A', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     const pane = await content();
     const work = pane.getByRole('option', { name: 'Работа' });
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
@@ -332,7 +337,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
 
   it('moves the roving focus with arrows and extends the range with shift', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     const pane = await content();
     const work = pane.getByRole('option', { name: 'Работа' });
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
@@ -348,7 +353,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
 
   it('enters a folder with Enter', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     const work = (await content()).getByRole('option', { name: 'Работа' });
 
     fireEvent.click(work);
@@ -360,7 +365,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('opens the focused bookmark with Enter and plain double click', async () => {
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     const pane = await content();
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
 
@@ -375,7 +380,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
 
   it('selects visible rows with a marquee drag on the pane background', async () => {
     const { client } = fakeClient(tree);
-    render(<BookmarkExplorer client={client} />);
+    renderExplorer(client);
     const pane = (await content()).getByRole('listbox', { name: 'Список' }).parentElement!;
     vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue(domRect(0, 0, 400, 300));
 

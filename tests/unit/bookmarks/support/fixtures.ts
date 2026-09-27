@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import type { ProjectionClient } from '../../../../app/features/bookmarks/application/ports';
+import type { BookmarkCommands, CreateFolderResult, ProjectionClient } from '../../../../app/features/bookmarks/application/ports';
 import type { BookmarkNode } from '../../../../app/features/bookmarks/domain/types';
 
 export const node = (partial: Partial<BookmarkNode> & { id: string }): BookmarkNode => ({
@@ -30,4 +30,10 @@ export function fakeClient(nodes: BookmarkNode[] = []) {
       nodes = next;
     },
   };
+}
+
+export function fakeCommands(result: CreateFolderResult = { ok: true, id: 'created-folder' }) {
+  const createFolder = vi.fn<BookmarkCommands['createFolder']>(async () => result);
+  const commands: BookmarkCommands = { createFolder };
+  return { commands, createFolder };
 }

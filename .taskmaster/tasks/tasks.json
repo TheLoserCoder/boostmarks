@@ -425,7 +425,7 @@
         "description": "Add an accessible context menu and reliable Create folder operation in the manager, including empty-folder state and an always discoverable non-context-menu action.",
         "details": "Define target policy: on current pane/background create inside current folder; on folder row/sidebar folder create inside that folder; on bookmark row create in its parent. Disable/omit action for non-writable roots or invalid targets with explanation. Provide toolbar New folder action for pointer/touch discovery and Shift+F10/Menu keyboard alternative. Use task 9 shared styled Radix ContextMenu/Dialog/TextField. Create through an application command/port and browser.bookmarks.create adapter (background request/response preferred); browser native tree remains source of truth, Dexie projection updates via serialized onCreated event, never direct projection writes. Validate nonempty trimmed name, define and test sibling duplicate policy, recheck stale/deleted parent, prevent duplicate submits, surface browser errors, focus/name field/cancel/restore. On success reveal/select new folder after projection update; no premature optimistic writes.",
         "testStrategy": "TDD pure target/name rules; mocked browser API command/transport tests and fake-indexeddb projection event integration; Chromium installed-extension E2E for background/row/empty state, keyboard menu, creation/reload, errors and rapid submit; Firefox lint plus runtime deferred to task 7; npm run check.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "9"
         ],
@@ -436,48 +436,53 @@
             "title": "[P0] Specify context targets and name validation",
             "description": "Write test-first rules for create-inside-current-pane, clicked folder, sidebar folder and bookmark-parent; writable-root policy and duplicate sibling handling.",
             "details": "Right-click empty pane and empty folder; Shift+F10/Menu on focused folder row; never infer target from unrelated selection. Propose rejecting empty/whitespace and new same-parent duplicate names, but surface existing native duplicates as ambiguity rather than rewriting them.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 10,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:04:40.425Z"
           },
           {
             "id": 2,
             "title": "[P0] Add native folder-create command and error contract",
             "description": "Define application request/result port and browser bookmark adapter/message transport, then create via browser.bookmarks.create.",
             "details": "Revalidate parent (native tree may have changed), serialize/guard rapid submits, map permission/stale-parent/browser errors. Return native ID; let onCreated reconcile Dexie and notify pages; no direct Dexie insertion. Keep service worker and page wiring at composition roots.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               "10.1"
             ],
             "parentTaskId": 10,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:04:40.449Z"
           },
           {
             "id": 3,
             "title": "[P0] Build discoverable New folder action and context menu/dialog",
             "description": "Use shared Radix-based styled ContextMenu/Dialog/TextField; add right-click to pane/folder/bookmark/quick-link targets plus visible New folder toolbar action.",
             "details": "Open via contextmenu and keyboard Shift+F10/Menu, focus field and restore trigger, Enter submit/Escape cancel, pending disabled state, inline errors. Preserve selection/drag/marquee, nested pin click, virtualization and search state. Reveal created folder only after projection confirms ID; handle empty projection.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               "10.2"
             ],
             "parentTaskId": 10,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:04:40.464Z"
           },
           {
             "id": 4,
             "title": "[P0] Verify creation, synchronization and keyboard in extension",
             "description": "Add focused unit/integration and real Chromium E2E for all targets, invalid/stale parent, duplicate-submit, persistence after reload and keyboard menu.",
             "details": "Test fake-indexeddb event flow and independent browser mutation boundary. Run check, test:e2e, Firefox lint; runtime Firefox remains task 7.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               "10.3"
             ],
             "parentTaskId": 10,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T19:04:40.482Z"
           }
-        ]
+        ],
+        "updatedAt": "2026-09-27T19:04:40.482Z"
       },
       {
         "id": "11",
@@ -532,9 +537,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T18:43:49.510Z",
+      "lastModified": "2026-09-27T19:04:40.482Z",
       "taskCount": 11,
-      "completedCount": 4,
+      "completedCount": 5,
       "tags": [
         "master"
       ]

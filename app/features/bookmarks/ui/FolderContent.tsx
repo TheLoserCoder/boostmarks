@@ -1,8 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Folder, Link, Pin, PinOff } from 'lucide-react';
 import { IconButton } from '../../../ui/Button';
+import { dispatchContextMenu } from '../../../ui/ContextMenu';
+import { resolveCreateTarget } from '../domain/createFolder';
 import { childrenOf } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
+import { ContentContextMenu, type ContextTarget } from './ContentContextMenu';
 import { useRowSelection } from './useRowSelection';
 import { VirtualList } from './VirtualList';
 import { VirtualTable } from './VirtualTable';
@@ -15,15 +18,18 @@ interface FolderContentProps {
   pinnedIds: readonly string[];
   onSelect: (id: string) => void;
   onTogglePin: (id: string) => void;
+  onRefresh: () => void;
+  /** Open the create-folder dialog for a resolved parent folder. */
+  onCreateFolderIn: (parentId: string, parentTitle: string) => void;
 }
 
-function ItemName({ item, onSelect }: { item: BookmarkNode; onSelect: (id: string) => void }) {
+function ItemName({ item }: { item: BookmarkNode }) {
   if (item.kind === 'folder') {
     return (
-      <button type="button" className="item-link" tabIndex={-1} onClick={() => onSelect(item.id)}>
+      <span className="item-link item-name" tabIndex={-1}>
         <Folder size={16} aria-hidden="true" />
         <span>{item.title}</span>
-      </button>
+      </span>
     );
   }
   if (item.kind === 'bookmark') {
@@ -57,10 +63,20 @@ const kindLabel = (item: BookmarkNode) =>
 
 const rowLabel = (item: BookmarkNode) => item.title || item.url || '';
 
-export function FolderContent({ nodes, folderId, view, pinnedIds, onSelect, onTogglePin }: FolderContentProps) {
+export function FolderContent({
+  nodes,
+  folderId,
+  view,
+  pinnedIds,
+  onSelect,
+  onTogglePin,
+  onRefresh,
+  onCreateFolderIn,
+}: FolderContentProps) {
   const items = childrenOf(nodes, folderId);
   const pinned = new Set(pinnedIds);
   const order = items.map(item => item.id);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const activate = useCallback(
     (id: string) => {
@@ -77,9 +93,44 @@ export function FolderContent({ nodes, folderId, view, pinnedIds, onSelect, onTo
 
   const controller = useRowSelection(order, activate);
 
+  const resolveTarget = (element: Element | null): ContextTarget => {
+    const rowId = element?.closest('[data-row-id]')?.getAttribute('data-row-id') ?? null;
+    const item = rowId === null ? undefined : items.find(entry => entry.id === rowId);
+    if (item === undefined) return { kind: 'pane', id: folderId, title: '' };
+    if (item.kind === 'folder') return { kind: 'folder', id: item.id, title: rowLabel(item) };
+    return { kind: 'bookmark', id: item.id, title: rowLabel(item), url: item.url };
+  };
+
+  const createParent = (target: ContextTarget) =>
+    resolveCreateTarget(nodes, { clickedId: target.kind === 'pane' ? null : target.id, currentFolderId: folderId });
+
+  const handleCreate = (target: ContextTarget) => {
+    const parent = createParent(target);
+    if (parent.ok) onCreateFolderIn(parent.parentId, parent.parentTitle);
+  };
+
+  const handleRowKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+      event.preventDefault();
+      dispatchContextMenu(event.currentTarget as Element);
+      return;
+    }
+    controller.onKeyDown(event);
+  };
+
+  const restoreFocus = () => {
+    const section = sectionRef.current;
+    const focusedId = controller.focusedId;
+    if (section === null || focusedId === null) return;
+    const element = [...section.querySelectorAll<HTMLElement>('[data-row-id]')].find(
+      candidate => candidate.dataset.rowId === focusedId,
+    );
+    element?.focus();
+  };
+
   const row = (item: BookmarkNode) => (
     <>
-      <ItemName item={item} onSelect={onSelect} />
+      <ItemName item={item} />
       {item.kind !== 'separator' ? (
         <PinToggle item={item} pinned={pinned.has(item.id)} onTogglePin={onTogglePin} />
       ) : null}
@@ -87,80 +138,94 @@ export function FolderContent({ nodes, folderId, view, pinnedIds, onSelect, onTo
   );
 
   return (
-    <section className="folder-content" aria-label="Содержимое папки">
-      {items.length === 0 ? (
-        <p className="empty-folder">Папка пуста</p>
-      ) : view === 'list' ? (
-        <VirtualList
-          items={items}
-          getKey={item => item.id}
-          getLabel={rowLabel}
-          label="Список"
-          controller={controller}
-          renderItem={item => row(item)}
-        />
-      ) : view === 'table' ? (
-        <VirtualTable
-          items={items}
-          getKey={item => item.id}
-          getLabel={rowLabel}
-          label="Содержимое папки"
-          controller={controller}
-          columns={['Название', 'Тип', 'Адрес']}
-          renderCells={item => [
-            <div role="gridcell" key="name" className="virtual-cell">
-              {row(item)}
-            </div>,
-            <div role="gridcell" key="type" className="virtual-cell">
-              {kindLabel(item)}
-            </div>,
-            <div role="gridcell" key="address" className="virtual-cell">
-              {item.url ?? ''}
-            </div>,
-          ]}
-        />
-      ) : (
-        <ul
-          className="content-grid"
-          aria-label="Плитка"
-          role="listbox"
-          aria-multiselectable={true}
-          onKeyDown={controller.onKeyDown}
-          onMouseDown={controller.onBackgroundMouseDown}
-        >
-          {items.map(item => (
-            <li
-              key={item.id}
-              role="option"
-              aria-selected={controller.selectedIds.has(item.id)}
-              aria-label={rowLabel(item)}
-              tabIndex={controller.focusedId === item.id ? 0 : -1}
-              data-row-id={item.id}
-              className={`grid-card grid-${item.kind}`}
-              onClick={event => controller.onRowClick(item.id, event)}
-              onDoubleClick={event => controller.onRowDoubleClick(item.id, event)}
-              onKeyDown={event => {
-                event.stopPropagation();
-                controller.onKeyDown(event);
-              }}
-            >
-              {row(item)}
-            </li>
-          ))}
-          {controller.marquee !== null ? (
-            <div
-              className="marquee"
-              aria-hidden="true"
-              style={{
-                height: controller.marquee.height,
-                left: controller.marquee.left,
-                top: controller.marquee.top,
-                width: controller.marquee.width,
-              }}
-            />
-          ) : null}
-        </ul>
-      )}
-    </section>
+    <ContentContextMenu
+      resolveTarget={resolveTarget}
+      canCreate={target => createParent(target).ok}
+      isPinned={target => pinned.has(target.id)}
+      onOpenFolder={onSelect}
+      onOpenBookmark={url => window.open(url, '_blank', 'noopener')}
+      onCreateFolder={handleCreate}
+      onTogglePin={target => onTogglePin(target.id)}
+      onRefresh={onRefresh}
+      onRestoreFocus={restoreFocus}
+    >
+      <section className="folder-content" aria-label="Содержимое папки" ref={sectionRef}>
+        {items.length === 0 ? (
+          <p className="empty-folder">Папка пуста</p>
+        ) : view === 'list' ? (
+          <VirtualList
+            items={items}
+            getKey={item => item.id}
+            getLabel={rowLabel}
+            label="Список"
+            controller={controller}
+            rowKeyDown={handleRowKeyDown}
+            renderItem={item => row(item)}
+          />
+        ) : view === 'table' ? (
+          <VirtualTable
+            items={items}
+            getKey={item => item.id}
+            getLabel={rowLabel}
+            label="Содержимое папки"
+            controller={controller}
+            rowKeyDown={handleRowKeyDown}
+            columns={['Название', 'Тип', 'Адрес']}
+            renderCells={item => [
+              <div role="gridcell" key="name" className="virtual-cell">
+                {row(item)}
+              </div>,
+              <div role="gridcell" key="type" className="virtual-cell">
+                {kindLabel(item)}
+              </div>,
+              <div role="gridcell" key="address" className="virtual-cell">
+                {item.url ?? ''}
+              </div>,
+            ]}
+          />
+        ) : (
+          <ul
+            className="content-grid"
+            aria-label="Плитка"
+            role="listbox"
+            aria-multiselectable={true}
+            onKeyDown={controller.onKeyDown}
+            onMouseDown={controller.onBackgroundMouseDown}
+          >
+            {items.map(item => (
+              <li
+                key={item.id}
+                role="option"
+                aria-selected={controller.selectedIds.has(item.id)}
+                aria-label={rowLabel(item)}
+                tabIndex={controller.focusedId === item.id ? 0 : -1}
+                data-row-id={item.id}
+                className={`grid-card grid-${item.kind}`}
+                onClick={event => controller.onRowClick(item.id, event)}
+                onDoubleClick={event => controller.onRowDoubleClick(item.id, event)}
+                onKeyDown={event => {
+                  event.stopPropagation();
+                  handleRowKeyDown(event);
+                }}
+              >
+                {row(item)}
+              </li>
+            ))}
+            {controller.marquee !== null ? (
+              <div
+                className="marquee"
+                aria-hidden="true"
+                style={{
+                  height: controller.marquee.height,
+                  left: controller.marquee.left,
+                  top: controller.marquee.top,
+                  width: controller.marquee.width,
+                }}
+              />
+            ) : null}
+          </ul>
+        )}
+      </section>
+    </ContentContextMenu>
   );
 }

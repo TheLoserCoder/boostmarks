@@ -7,7 +7,7 @@ export function childrenOf(nodes: BookmarkNode[], parentId: string | null): Book
     .sort((a, b) => a.index - b.index);
 }
 
-function isSyntheticRoot(node: BookmarkNode): boolean {
+export function isSyntheticRoot(node: BookmarkNode): boolean {
   return node.parentId === null && node.kind === 'folder' && node.title === '';
 }
 

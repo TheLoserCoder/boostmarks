@@ -10,6 +10,8 @@ interface VirtualListProps<T> {
   renderItem: (item: T, index: number) => ReactNode;
   label: string;
   controller?: RowSelectionController;
+  /** Overrides the row key handling, e.g. to open the context menu from the keyboard. */
+  rowKeyDown?: (event: React.KeyboardEvent) => void;
 }
 
 interface Row<T> {
@@ -34,7 +36,7 @@ interface OptionAttributes {
  * readable even though only the visible slice is in the DOM. With a selection
  * controller the list becomes a multi-select listbox with a roving tab stop.
  */
-export function VirtualList<T>({ items, getKey, getLabel, renderItem, label, controller }: VirtualListProps<T>) {
+export function VirtualList<T>({ items, getKey, getLabel, renderItem, label, controller, rowKeyDown }: VirtualListProps<T>) {
   const internalRef = useRef<HTMLDivElement>(null);
   const parentRef = controller?.scrollRef ?? internalRef;
   const rowRefs = useRef(new Map<string, HTMLLIElement>());
@@ -106,7 +108,7 @@ export function VirtualList<T>({ items, getKey, getLabel, renderItem, label, con
                 onDoubleClick: event => controller.onRowDoubleClick(key, event),
                 onKeyDown: event => {
                   event.stopPropagation();
-                  controller.onKeyDown(event);
+                  (rowKeyDown ?? controller.onKeyDown)(event);
                 },
               }
             : {};

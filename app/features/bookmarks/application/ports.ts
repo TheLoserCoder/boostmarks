@@ -27,3 +27,15 @@ export interface ProjectionClient {
   requestSync(): void;
   subscribe(listener: () => void): () => void;
 }
+
+export type CreateFolderFailureReason = 'invalid-title' | 'invalid-parent' | 'failed';
+
+export type CreateFolderResult = { ok: true; id: string } | { ok: false; reason: CreateFolderFailureReason };
+
+/**
+ * Native bookmark mutations. Creating goes through the browser API so the native
+ * tree stays the single source of truth; the projection follows via its own events.
+ */
+export interface BookmarkCommands {
+  createFolder(parentId: string, title: string): Promise<CreateFolderResult>;
+}
