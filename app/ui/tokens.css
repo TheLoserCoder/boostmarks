@@ -1,43 +1,49 @@
 /*
  * Design tokens for the Boostmarks extension UI.
- * Light by default; follows the OS scheme, and an explicit [data-theme] override
- * is reserved for the theme preference landing in task 3.7.
+ * Dark first, following the Windows 11 Explorer reference: chrome, sidebar and
+ * content are distinct surfaces and the accent is the Fluent light blue.
+ * An explicit [data-theme] override is reserved for the theme preference in task 3.7.
  */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  --surface: #ffffff;
-  --surface-1: #f6f7f9;
-  --surface-2: #eceef2;
-  --surface-3: #e2e5ea;
+  --chrome: #181818;
+  --sidebar: #191919;
+  --content-shell: #1e1e1e;
+  --surface: #202020;
+  --surface-1: #252525;
+  --surface-2: #282828;
+  --surface-3: #303030;
+  --field: #282828;
 
-  --text: #1b1f24;
-  --text-muted: #59616e;
-  --text-inverse: #ffffff;
+  --text: #f3f3f3;
+  --text-muted: #9a9a9a;
+  --text-inverse: #0f1115;
 
-  --border: rgb(0 0 0 / 12%);
-  --border-strong: rgb(0 0 0 / 24%);
+  --border: rgb(255 255 255 / 7%);
+  --border-strong: rgb(255 255 255 / 14%);
 
-  --hover: rgb(0 0 0 / 6%);
-  --selected: rgb(15 98 214 / 14%);
+  --hover: rgb(255 255 255 / 5%);
+  --selected: rgb(255 255 255 / 8%);
 
-  --accent: #0f62d6;
-  --accent-hover: #0b52b6;
-  --accent-soft: rgb(15 98 214 / 12%);
-  --accent-contrast: #ffffff;
+  --accent: #60cdff;
+  --accent-strong: #005fb8;
+  --accent-hover: #8bdcff;
+  --accent-soft: rgb(96 205 255 / 16%);
+  --accent-contrast: #0b1220;
 
-  --danger: #b3261e;
-  --danger-soft: rgb(179 38 30 / 12%);
+  --danger: #ff99a4;
+  --danger-soft: rgb(255 153 164 / 14%);
 
-  --focus-ring: #0f62d6;
+  --focus-ring: #9bdcff;
 
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 14%);
-  --shadow-2: 0 10px 30px rgb(0 0 0 / 22%);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-2: 0 12px 32px rgb(0 0 0 / 55%);
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.4rem;
-  --radius-lg: 0.6rem;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -45,93 +51,83 @@
   --space-4: 1rem;
   --space-5: 1.5rem;
 
-  --font-xs: 0.78rem;
-  --font-sm: 0.85rem;
-  --font-md: 0.95rem;
-  --font-lg: 1.15rem;
+  --font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
+  --font-xs: 11px;
+  --font-sm: 12px;
+  --font-md: 13px;
+  --font-lg: 16px;
 
   /* Legacy aliases kept while older rules migrate to the names above. */
   --muted: var(--text-muted);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #1b1c20;
-    --surface-1: #24262b;
-    --surface-2: #2e3137;
-    --surface-3: #383c44;
-
-    --text: #eef0f4;
-    --text-muted: #a4acba;
-    --text-inverse: #0b1220;
-
-    --border: rgb(255 255 255 / 14%);
-    --border-strong: rgb(255 255 255 / 26%);
-
-    --hover: rgb(255 255 255 / 8%);
-    --selected: rgb(96 165 250 / 26%);
-
-    --accent: #5b9bff;
-    --accent-hover: #7cb0ff;
-    --accent-soft: rgb(91 155 255 / 18%);
-    --accent-contrast: #0b1220;
-
-    --danger: #ff8a80;
-    --danger-soft: rgb(255 138 128 / 16%);
-
-    --focus-ring: #8ab6ff;
-
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 45%);
-    --shadow-2: 0 12px 32px rgb(0 0 0 / 55%);
-  }
-}
-
 [data-theme='light'] {
   color-scheme: light;
+  --chrome: #f3f3f3;
+  --sidebar: #f7f7f7;
+  --content-shell: #f5f5f5;
   --surface: #ffffff;
-  --surface-1: #f6f7f9;
-  --surface-2: #eceef2;
-  --surface-3: #e2e5ea;
-  --text: #1b1f24;
-  --text-muted: #59616e;
+  --surface-1: #f6f6f6;
+  --surface-2: #ededed;
+  --surface-3: #e3e3e3;
+  --field: #ffffff;
+  --text: #1b1b1b;
+  --text-muted: #5c5c5c;
   --text-inverse: #ffffff;
-  --border: rgb(0 0 0 / 12%);
-  --border-strong: rgb(0 0 0 / 24%);
-  --hover: rgb(0 0 0 / 6%);
-  --selected: rgb(15 98 214 / 14%);
-  --accent: #0f62d6;
-  --accent-hover: #0b52b6;
-  --accent-soft: rgb(15 98 214 / 12%);
+  --border: rgb(0 0 0 / 9%);
+  --border-strong: rgb(0 0 0 / 22%);
+  --hover: rgb(0 0 0 / 5%);
+  --selected: rgb(0 0 0 / 8%);
+  --accent: #005fb8;
+  --accent-strong: #005fb8;
+  --accent-hover: #1a74cc;
+  --accent-soft: rgb(0 95 184 / 12%);
   --accent-contrast: #ffffff;
   --danger: #b3261e;
   --danger-soft: rgb(179 38 30 / 12%);
-  --focus-ring: #0f62d6;
+  --focus-ring: #005fb8;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 12%);
+  --shadow-2: 0 10px 30px rgb(0 0 0 / 20%);
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --surface: #1b1c20;
-  --surface-1: #24262b;
-  --surface-2: #2e3137;
-  --surface-3: #383c44;
-  --text: #eef0f4;
-  --text-muted: #a4acba;
-  --text-inverse: #0b1220;
-  --border: rgb(255 255 255 / 14%);
-  --border-strong: rgb(255 255 255 / 26%);
-  --hover: rgb(255 255 255 / 8%);
-  --selected: rgb(96 165 250 / 26%);
-  --accent: #5b9bff;
-  --accent-hover: #7cb0ff;
-  --accent-soft: rgb(91 155 255 / 18%);
+  --chrome: #181818;
+  --sidebar: #191919;
+  --content-shell: #1e1e1e;
+  --surface: #202020;
+  --surface-1: #252525;
+  --surface-2: #282828;
+  --surface-3: #303030;
+  --field: #282828;
+  --text: #f3f3f3;
+  --text-muted: #9a9a9a;
+  --text-inverse: #0f1115;
+  --border: rgb(255 255 255 / 7%);
+  --border-strong: rgb(255 255 255 / 14%);
+  --hover: rgb(255 255 255 / 5%);
+  --selected: rgb(255 255 255 / 8%);
+  --accent: #60cdff;
+  --accent-strong: #005fb8;
+  --accent-hover: #8bdcff;
+  --accent-soft: rgb(96 205 255 / 16%);
   --accent-contrast: #0b1220;
-  --danger: #ff8a80;
-  --danger-soft: rgb(255 138 128 / 16%);
-  --focus-ring: #8ab6ff;
+  --danger: #ff99a4;
+  --danger-soft: rgb(255 153 164 / 14%);
+  --focus-ring: #9bdcff;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-2: 0 12px 32px rgb(0 0 0 / 55%);
 }
 
 @media (forced-colors: active) {
   :root {
+    --chrome: Canvas;
+    --sidebar: Canvas;
+    --content-shell: Canvas;
+    --surface-1: Canvas;
+    --surface-2: Canvas;
+    --surface-3: Canvas;
+    --field: Field;
     --border: CanvasText;
     --border-strong: CanvasText;
     --hover: Highlight;

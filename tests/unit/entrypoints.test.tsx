@@ -15,6 +15,8 @@ const emptyClient: ProjectionClient = {
 
 const emptyCommands: BookmarkCommands = {
   createFolder: async () => ({ ok: false, reason: 'failed' }),
+  move: async () => ({ ok: false, reason: 'failed' }),
+  moveBefore: async () => ({ ok: false, reason: 'failed' }),
 };
 
 describe('extension pages', () => {
@@ -25,7 +27,9 @@ describe('extension pages', () => {
 
   it('labels the manager main region', () => {
     render(<ManagerApp client={emptyClient} commands={emptyCommands} />);
-    expect(screen.getByRole('main')).toHaveAccessibleName('Проводник закладок');
+    expect(screen.getByRole('main')).toHaveAccessibleName('Закладки');
+    expect(screen.queryByRole('heading', { name: 'Проводник закладок' })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Закладки' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('labels the options main region', () => {

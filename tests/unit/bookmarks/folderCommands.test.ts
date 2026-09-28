@@ -5,8 +5,10 @@ import { BOOKMARK_CREATE_FOLDER } from '../../../app/features/bookmarks/applicat
 
 function api(overrides: Partial<BookmarkMutationApi> = {}): BookmarkMutationApi {
   return {
-    get: vi.fn(async () => [{ id: 'bar' }]),
+    get: vi.fn(async () => [{ id: 'bar', title: 'Панель' }]),
+    getChildren: vi.fn(async () => []),
     create: vi.fn(async () => ({ id: 'new-folder' })),
+    move: vi.fn(async (id: string) => ({ id })),
     ...overrides,
   };
 }
@@ -21,7 +23,7 @@ describe('browser bookmark commands', () => {
   });
 
   it('refuses an empty title before touching the browser API', async () => {
-    const get = vi.fn(async () => [{ id: 'bar' }]);
+    const get = vi.fn(async () => [{ id: 'bar', title: 'Панель' }]);
     const commands = createBrowserBookmarkCommands(api({ get }));
 
     await expect(commands.createFolder('bar', '   ')).resolves.toEqual({ ok: false, reason: 'invalid-title' });

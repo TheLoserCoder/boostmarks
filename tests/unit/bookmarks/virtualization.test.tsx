@@ -43,7 +43,11 @@ function renderExplorer(client: ProjectionClient) {
 async function content() {
   return within(await screen.findByRole('region', { name: 'Содержимое папки' }));
 }
+
+/** Home -> the top-level folders bar -> the requested folder. */
 async function openFolder(title: string) {
+  const sidebar = within(await screen.findByRole('navigation', { name: 'Быстрый доступ' }));
+  fireEvent.click(sidebar.getByRole('button', { name: 'Панель закладок' }));
   const pane = await content();
   fireEvent.doubleClick(await pane.findByRole('option', { name: title }));
 }

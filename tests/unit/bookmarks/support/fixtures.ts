@@ -34,6 +34,10 @@ export function fakeClient(nodes: BookmarkNode[] = []) {
 
 export function fakeCommands(result: CreateFolderResult = { ok: true, id: 'created-folder' }) {
   const createFolder = vi.fn<BookmarkCommands['createFolder']>(async () => result);
-  const commands: BookmarkCommands = { createFolder };
+  const commands: BookmarkCommands = {
+    createFolder,
+    move: vi.fn<BookmarkCommands['move']>(async () => ({ ok: true })),
+    moveBefore: vi.fn<BookmarkCommands['moveBefore']>(async () => ({ ok: true })),
+  };
   return { commands, createFolder };
 }

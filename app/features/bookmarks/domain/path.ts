@@ -1,6 +1,6 @@
 import type { BookmarkNode } from './types';
 
-export function childrenOf(nodes: BookmarkNode[], parentId: string | null): BookmarkNode[] {
+export function childrenOf(nodes: readonly BookmarkNode[], parentId: string | null): BookmarkNode[] {
   return nodes
     .filter(node => node.parentId === parentId)
     .slice()

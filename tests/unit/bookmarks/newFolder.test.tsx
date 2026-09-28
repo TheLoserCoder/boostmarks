@@ -22,6 +22,10 @@ async function setup(result?: CreateFolderResult) {
   const { client, notify, setNodes } = fakeClient(tree);
   const { commands, createFolder } = result === undefined ? fakeCommands() : fakeCommands(result);
   render(<BookmarkExplorer client={client} commands={commands} />);
+  // Home is the landing view; folder actions target an open folder.
+  fireEvent.click(
+    within(await screen.findByRole('navigation', { name: 'Быстрый доступ' })).getByRole('button', { name: 'Панель закладок' }),
+  );
   await content();
   return { client, notify, setNodes, createFolder };
 }

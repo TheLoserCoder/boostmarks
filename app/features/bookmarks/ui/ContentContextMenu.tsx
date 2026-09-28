@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, FolderOpen, FolderPlus, Pin, PinOff, RefreshCw } from 'lucide-react';
+import { ExternalLink, FolderOpen, FolderPlus, Pin, PinOff, RefreshCw, FolderInput, ArrowUpToLine } from 'lucide-react';
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -19,10 +19,14 @@ interface ContentContextMenuProps {
   /** Resolves the right-clicked row (or the pane background) into an action target. */
   resolveTarget: (element: Element | null) => ContextTarget;
   canCreate: (target: ContextTarget) => boolean;
+  canMove: (target: ContextTarget) => boolean;
+  canMoveToStart: (target: ContextTarget) => boolean;
   isPinned: (target: ContextTarget) => boolean;
   onOpenFolder: (id: string) => void;
   onOpenBookmark: (url: string) => void;
   onCreateFolder: (target: ContextTarget) => void;
+  onMove: (target: ContextTarget) => void;
+  onMoveToStart: (target: ContextTarget) => void;
   onTogglePin: (target: ContextTarget) => void;
   onRefresh: () => void;
   onRestoreFocus: () => void;
@@ -34,10 +38,14 @@ const emptyTarget: ContextTarget = { kind: 'pane', id: '', title: '' };
 export function ContentContextMenu({
   resolveTarget,
   canCreate,
+  canMove,
+  canMoveToStart,
   isPinned,
   onOpenFolder,
   onOpenBookmark,
   onCreateFolder,
+  onMove,
+  onMoveToStart,
   onTogglePin,
   onRefresh,
   onRestoreFocus,
@@ -89,6 +97,20 @@ export function ContentContextMenu({
         {target.kind !== 'pane' ? (
           <>
             <ContextMenuSeparator />
+            <ContextMenuItem
+              icon={<FolderInput size={16} aria-hidden="true" />}
+              disabled={!canMove(target)}
+              onSelect={() => onMove(target)}
+            >
+              Переместить…
+            </ContextMenuItem>
+            <ContextMenuItem
+              icon={<ArrowUpToLine size={16} aria-hidden="true" />}
+              disabled={!canMoveToStart(target)}
+              onSelect={() => onMoveToStart(target)}
+            >
+              В начало папки
+            </ContextMenuItem>
             <ContextMenuItem
               icon={
                 pinned ? <PinOff size={16} aria-hidden="true" /> : <Pin size={16} aria-hidden="true" />

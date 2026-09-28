@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Pencil } from 'lucide-react';
-import { Button, IconButton } from '../../../ui/Button';
+import { ChevronDown } from 'lucide-react';
+import { IconButton } from '../../../ui/Button';
 import { folderChain, formatFolderPath, resolveFolderPath } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
 
 interface AddressBarProps {
   nodes: BookmarkNode[];
-  folderId: string;
+  /** Open folder id, or null for the Home view. */
+  folderId: string | null;
   onNavigate: (id: string) => void;
 }
 
@@ -21,14 +22,14 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const chain = folderChain(nodes, folderId);
+  const chain = folderId === null ? [] : folderChain(nodes, folderId);
 
   useEffect(() => {
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
   const startEditing = () => {
-    setValue(formatFolderPath(nodes, folderId));
+    setValue(folderId === null ? '' : formatFolderPath(nodes, folderId));
     setError(null);
     setEditing(true);
   };
@@ -51,11 +52,12 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
 
   if (editing) {
     return (
-      <form className="address-bar path-form" onSubmit={submit}>
+      <form className="address-bar address-field path-form" onSubmit={submit}>
         <input
           ref={inputRef}
           className="ui-input path-input"
           aria-label="Путь к папке"
+          name="bookmark-path"
           autoComplete="off"
           spellCheck={false}
           value={value}
@@ -64,9 +66,6 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
             if (event.key === 'Escape') cancel();
           }}
         />
-        <Button type="submit" variant="solid" size="sm">
-          Перейти
-        </Button>
         {error !== null ? (
           <p className="ui-field-error address-bar-error" role="alert">
             {error}
@@ -77,23 +76,33 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
   }
 
   return (
-    <nav aria-label="Путь" className="address-bar breadcrumbs">
-      <ol>
-        {chain.map(folder => (
-          <li key={folder.id}>
-            <button
-              type="button"
-              aria-current={folder.id === folderId ? 'page' : undefined}
-              onClick={() => onNavigate(folder.id)}
-            >
-              {folder.title}
-            </button>
-          </li>
-        ))}
-      </ol>
-      <IconButton aria-label="Изменить путь" size="sm" onClick={startEditing}>
-        <Pencil size={14} aria-hidden="true" />
+    <div className="address-bar address-field">
+      <nav aria-label="Путь" className="breadcrumbs">
+        <ol>
+          {chain.length === 0 ? (
+            <li>
+              <span className="breadcrumb-current" aria-current="page">
+                Главная
+              </span>
+            </li>
+          ) : (
+            chain.map(folder => (
+              <li key={folder.id}>
+                <button
+                  type="button"
+                  aria-current={folder.id === folderId ? 'page' : undefined}
+                  onClick={() => onNavigate(folder.id)}
+                >
+                  {folder.title}
+                </button>
+              </li>
+            ))
+          )}
+        </ol>
+      </nav>
+      <IconButton className="address-edit-trigger" aria-label="Ввести путь" size="sm" onClick={startEditing}>
+        <ChevronDown size={14} aria-hidden="true" />
       </IconButton>
-    </nav>
+    </div>
   );
 }

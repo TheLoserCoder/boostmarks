@@ -63,6 +63,29 @@ describe('applyMoved', () => {
 
     expect(next.find(entry => entry.id === 'child-b')).toMatchObject({ parentId: 'root', index: 0 });
   });
+
+  it('shifts siblings when moving within the same folder', () => {
+    const nodes = [
+      node({ id: 'a', parentId: 'folder', index: 0 }),
+      node({ id: 'b', parentId: 'folder', index: 1 }),
+      node({ id: 'c', parentId: 'folder', index: 2 }),
+    ];
+    expect(applyMoved(nodes, 'a', { parentId: 'folder', index: 2 }).map(item => [item.id, item.index]))
+      .toEqual([['a', 2], ['b', 0], ['c', 1]]);
+    expect(applyMoved(nodes, 'c', { parentId: 'folder', index: 0 }).map(item => [item.id, item.index]))
+      .toEqual([['a', 1], ['b', 2], ['c', 0]]);
+  });
+
+  it('closes the old gap and opens the new gap across folders', () => {
+    const nodes = [
+      node({ id: 'a', parentId: 'one', index: 0 }),
+      node({ id: 'b', parentId: 'one', index: 1 }),
+      node({ id: 'c', parentId: 'two', index: 0 }),
+      node({ id: 'd', parentId: 'two', index: 1 }),
+    ];
+    expect(applyMoved(nodes, 'a', { parentId: 'two', index: 1 }).map(item => [item.id, item.parentId, item.index]))
+      .toEqual([['a', 'two', 1], ['b', 'one', 0], ['c', 'two', 0], ['d', 'two', 2]]);
+  });
 });
 
 describe('applyRemoved', () => {

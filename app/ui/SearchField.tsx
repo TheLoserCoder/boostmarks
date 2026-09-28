@@ -15,10 +15,10 @@ export function SearchField({ value, onChange, label, placeholder, clearLabel }:
 
   return (
     <div className="ui-search">
-      <Search size={16} className="ui-search-icon" aria-hidden="true" />
       <input
         type="search"
         aria-label={label}
+        name="bookmark-search"
         placeholder={placeholder}
         autoComplete="off"
         spellCheck={false}
@@ -28,6 +28,7 @@ export function SearchField({ value, onChange, label, placeholder, clearLabel }:
           if (event.key === 'Escape') onChange('');
         }}
       />
+      <Search size={16} className="ui-search-icon" aria-hidden="true" />
       {value.length > 0 ? (
         <IconButton size="sm" aria-label={clearText} onClick={() => onChange('')}>
           <X size={14} aria-hidden="true" />

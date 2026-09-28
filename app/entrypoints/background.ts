@@ -6,6 +6,8 @@ import { createBookmarkSync } from '../features/bookmarks/application/bookmarkSy
 import {
   PROJECTION_CHANGED,
   isCreateFolderRequestMessage,
+  isMoveRequestMessage,
+  isMoveBeforeRequestMessage,
   isProjectionSyncRequestMessage,
 } from '../features/bookmarks/application/messages';
 
@@ -30,6 +32,12 @@ export default defineBackground(() => {
     }
     if (isCreateFolderRequestMessage(message)) {
       return commands.createFolder(message.parentId, message.title);
+    }
+    if (isMoveRequestMessage(message)) {
+      return commands.move(message.id, message.parentId);
+    }
+    if (isMoveBeforeRequestMessage(message)) {
+      return commands.moveBefore(message.id, message.beforeId);
     }
     return undefined;
   });

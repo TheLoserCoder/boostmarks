@@ -89,7 +89,7 @@
         "description": "Create side navigation, two panes, tabs, paths, list/table/grid, virtualized large views, keyboard selection, rectangle selection, dnd-kit DnD and essential popup actions; add ru/en and theme settings.",
         "details": "",
         "testStrategy": "Test-first component interactions and keyboard accessibility; Chromium/Firefox extension smoke tests, reduced-motion and large tree benchmarks.",
-        "status": "deferred",
+        "status": "in-progress",
         "dependencies": [
           "2"
         ],
@@ -144,10 +144,11 @@
             "title": "Drag and drop move with dnd-kit",
             "description": "Move bookmarks and folders onto folders or positions with keyboard-accessible alternative (menu action), optimistic UI plus reconcile on browser events and conflict handling.",
             "details": "",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 3,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-28T22:00:00.000Z"
           },
           {
             "id": 6,
@@ -190,7 +191,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-09-27T18:31:10.482Z"
+        "updatedAt": "2026-09-28T22:00:00.000Z"
       },
       {
         "id": "4",
@@ -537,12 +538,90 @@
           }
         ],
         "updatedAt": "2026-09-27T19:07:32.537Z"
+      },
+      {
+        "id": "12",
+        "title": "Redesign manager around Stitch Explorer reference",
+        "description": "Adapt the supplied dark Windows Explorer-style reference into Boostmarks using real bookmark data and reusable design tokens, after resolving drag usability under task 3.5.",
+        "details": "Detailed acceptance criteria, mapping, phases and dependencies in .taskmaster/docs/explorer-redesign-plan.md. Preserve native bookmarks, clean architecture, accessibility and virtualization; no fake OS actions or CDN runtime assets.",
+        "testStrategy": "TDD component tests, contrast/keyboard/forced-colors review, Chromium installed-extension E2E with seeded bookmarks and screenshots in dark/light and narrow/wide layouts, Firefox runtime task 7.",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design contract and demo fixtures",
+            "description": "P1: Translate Stitch screenshot into UI inventory, dark/light token map, representative seeded bookmarks, baseline screenshots and explicit exclusions (no fake OS actions/CDN).",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 12,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T22:08:35.831Z"
+          },
+          {
+            "id": 2,
+            "title": "Theme tokens and shared controls",
+            "description": "P1: Semantic dark-first palette plus light/system/forced-colors, focus/hover/contrast states; migrate shared controls without breaking popup/options.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 12,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T22:08:35.846Z"
+          },
+          {
+            "id": 3,
+            "title": "Explorer shell navigation and toolbar",
+            "description": "P1: Separate navigation/path/search from contextual actions; build sidebar hierarchy and responsive layout using real operations.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 12,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T22:08:35.863Z"
+          },
+          {
+            "id": 4,
+            "title": "Home cards and folder content",
+            "description": "P1: Pinned/top-level cards, honest empty state, compact list/table/grid/status; retain native projection, keyboard selection and virtualization.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 12,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T22:08:35.878Z"
+          },
+          {
+            "id": 5,
+            "title": "Popup options and localization alignment",
+            "description": "P2: Align shared visual language with popup/options; coordinate theme and ru/en preferences with existing task 3.7, no duplicate i18n.",
+            "details": "",
+            "status": "in-progress",
+            "dependencies": [],
+            "parentTaskId": 12,
+            "parentId": "undefined",
+            "updatedAt": "2026-09-27T22:08:35.894Z"
+          },
+          {
+            "id": 6,
+            "title": "Accessibility and real-browser sign-off",
+            "description": "P2: Dark/light wide/narrow screenshots; keyboard, focus, reduced motion, forced colors, virtualized large folder, Chromium E2E and Firefox runtime task 7.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 12,
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-09-27T22:08:35.894Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-27T19:07:32.537Z",
-      "taskCount": 11,
+      "lastModified": "2026-09-28T22:00:00.000Z",
+      "taskCount": 12,
       "completedCount": 6,
       "tags": [
         "master"

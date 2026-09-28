@@ -168,6 +168,16 @@ describe('bookmarkSync events', () => {
     expect(store.nodes.get('a')).toMatchObject({ parentId: 'folder', index: 0 });
   });
 
+  it('persists shifted sibling indexes, not only the moved node', async () => {
+    const { sync, store, source } = setup();
+    sync.start();
+    await sync.whenIdle();
+    source.emit('moved', 'folder', { parentId: 'bar', index: 0 });
+    await sync.whenIdle();
+    expect(store.nodes.get('folder')?.index).toBe(0);
+    expect(store.nodes.get('a')?.index).toBe(1);
+  });
+
   it('prunes descendants when a folder is removed', async () => {
     const { sync, store, source } = setup();
     sync.start();

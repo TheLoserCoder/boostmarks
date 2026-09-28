@@ -3,8 +3,10 @@
 }
 
 body {
+  background: var(--surface);
   color: var(--text);
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-family);
+  font-size: var(--font-md);
   margin: 0;
 }
 
@@ -16,9 +18,61 @@ body {
   padding: 1rem 1.25rem;
 }
 
-.page > h1 {
-  font-size: 1.25rem;
-  margin: 0;
+.page.manager {
+  background: var(--surface);
+  gap: 0;
+  padding: 0;
+}
+
+.tab-strip {
+  background: var(--chrome);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex: none;
+  height: 3.5rem;
+  padding: 0.625rem 0.75rem 0;
+}
+
+.tab-list {
+  align-items: end;
+  display: flex;
+  flex: 1;
+}
+
+.explorer-tab {
+  align-items: center;
+  align-self: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-color: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  display: flex;
+  gap: 0.55rem;
+  max-width: 14rem;
+  min-width: 11rem;
+  padding: 0 0.9rem;
+}
+
+.explorer-tab > svg {
+  color: var(--accent);
+  flex: none;
+}
+
+.explorer-tab span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.explorer-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.manager-tab-panel {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 .popup {
@@ -41,7 +95,7 @@ button:focus-visible {
 .error {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: 0.5rem 0.75rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

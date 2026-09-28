@@ -5,7 +5,7 @@ test('manager projects real browser bookmarks and follows changes', async () => 
   const session = await launchExtension();
   try {
     const page = await openExtensionPage(session.context, session.extensionId, 'manager.html');
-    await expect(page.getByRole('heading', { name: 'Проводник закладок' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Закладки' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Настройки' })).toBeVisible();
 
     const created = await seedBookmarkPair(page);
@@ -25,9 +25,9 @@ test('manager projects real browser bookmarks and follows changes', async () => 
     await page.keyboard.press('Escape');
     await expect(bookmarkOption).toHaveAttribute('aria-selected', 'false');
 
-    await page.getByRole('button', { name: 'Изменить путь' }).click();
+    await page.getByRole('button', { name: 'Ввести путь' }).click();
     await page.getByLabel('Путь к папке').fill(`${created.barTitle}\\Boostmarks E2E folder`);
-    await page.getByRole('button', { name: 'Перейти' }).click();
+    await page.getByLabel('Путь к папке').press('Enter');
     await expect(content.getByRole('link', { name: created.bookmarkTitle })).toBeVisible();
 
     await page.getByLabel('Поиск закладок').fill('Boostmarks E2E bookmark');

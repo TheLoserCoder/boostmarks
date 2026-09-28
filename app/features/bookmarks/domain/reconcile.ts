@@ -31,8 +31,23 @@ export function applyChanged(nodes: BookmarkNode[], id: string, change: ChangeIn
 }
 
 export function applyMoved(nodes: BookmarkNode[], id: string, move: MoveInfo): BookmarkNode[] {
-  if (!nodes.some(node => node.id === id)) return nodes;
-  return nodes.map(node => (node.id === id ? { ...node, parentId: move.parentId, index: move.index } : node));
+  const source = nodes.find(node => node.id === id);
+  if (source === undefined) return nodes;
+  return nodes.map(node => {
+    if (node.id === id) return { ...node, parentId: move.parentId, index: move.index };
+    if (source.parentId === move.parentId && node.parentId === move.parentId) {
+      if (source.index < move.index && node.index > source.index && node.index <= move.index) {
+        return { ...node, index: node.index - 1 };
+      }
+      if (source.index > move.index && node.index >= move.index && node.index < source.index) {
+        return { ...node, index: node.index + 1 };
+      }
+    } else {
+      if (node.parentId === source.parentId && node.index > source.index) return { ...node, index: node.index - 1 };
+      if (node.parentId === move.parentId && node.index >= move.index) return { ...node, index: node.index + 1 };
+    }
+    return node;
+  });
 }
 
 export function descendantIds(nodes: BookmarkNode[], rootId: string): string[] {

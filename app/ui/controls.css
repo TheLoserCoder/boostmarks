@@ -167,7 +167,7 @@ body {
 }
 
 .ui-input {
-  background: var(--surface);
+  background: var(--field);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   color: var(--text);
@@ -215,7 +215,7 @@ body {
 
 .ui-search {
   align-items: center;
-  background: var(--surface);
+  background: var(--field);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   display: flex;

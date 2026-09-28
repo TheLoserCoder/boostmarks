@@ -8,6 +8,7 @@ import '../../ui/controls.css';
 import '../../ui/overlays.css';
 import '../../features/shell/shell.css';
 import '../../features/bookmarks/ui/explorer.css';
+import '../../features/bookmarks/ui/content.css';
 
 const client = createProjectionClient();
 const commands = createBookmarkCommandsClient(message => browser.runtime.sendMessage(message));

@@ -1,11 +1,13 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Folder, Link, Pin, PinOff } from 'lucide-react';
 import { IconButton } from '../../../ui/Button';
 import { dispatchContextMenu } from '../../../ui/ContextMenu';
 import { resolveCreateTarget } from '../domain/createFolder';
 import { childrenOf } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
+import type { MoveResult } from '../application/ports';
 import { ContentContextMenu, type ContextTarget } from './ContentContextMenu';
+import { DragItem } from './DragItem';
 import { useRowSelection } from './useRowSelection';
 import { VirtualList } from './VirtualList';
 import { VirtualTable } from './VirtualTable';
@@ -21,20 +23,32 @@ interface FolderContentProps {
   onRefresh: () => void;
   /** Open the create-folder dialog for a resolved parent folder. */
   onCreateFolderIn: (parentId: string, parentTitle: string) => void;
+  onMove: (id: string) => void;
+  onDropBefore: (id: string, beforeId: string) => Promise<MoveResult>;
+  /** Reports the selection in visual order so a drag that starts on it can move the whole group. */
+  onSelectionChange: (ids: readonly string[]) => void;
 }
 
 function ItemName({ item }: { item: BookmarkNode }) {
   if (item.kind === 'folder') {
     return (
-      <span className="item-link item-name" tabIndex={-1}>
+      <>
         <Folder size={16} aria-hidden="true" />
         <span>{item.title}</span>
-      </span>
+      </>
     );
   }
   if (item.kind === 'bookmark') {
     return (
-      <a className="item-link" href={item.url} target="_blank" rel="noopener noreferrer" tabIndex={-1}>
+      <a
+        className="item-link"
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        tabIndex={-1}
+        draggable={false}
+        onDragStart={event => event.preventDefault()}
+      >
         <Link size={16} aria-hidden="true" />
         <span>{item.title || item.url}</span>
       </a>
@@ -72,11 +86,15 @@ export function FolderContent({
   onTogglePin,
   onRefresh,
   onCreateFolderIn,
+  onMove,
+  onDropBefore,
+  onSelectionChange,
 }: FolderContentProps) {
-  const items = childrenOf(nodes, folderId);
+  const items = useMemo(() => childrenOf(nodes, folderId), [nodes, folderId]);
   const pinned = new Set(pinnedIds);
-  const order = items.map(item => item.id);
+  const order = useMemo(() => items.map(item => item.id), [items]);
   const sectionRef = useRef<HTMLElement>(null);
+  const [dragError, setDragError] = React.useState<string | null>(null);
 
   const activate = useCallback(
     (id: string) => {
@@ -92,6 +110,15 @@ export function FolderContent({
   );
 
   const controller = useRowSelection(order, activate);
+  const orderedSelection = useMemo(
+    () => items.filter(item => controller.selectedIds.has(item.id)).map(item => item.id),
+    [items, controller.selectedIds],
+  );
+
+  useEffect(() => {
+    onSelectionChange(orderedSelection);
+  }, [onSelectionChange, orderedSelection]);
+  useEffect(() => () => onSelectionChange([]), [onSelectionChange]);
 
   const resolveTarget = (element: Element | null): ContextTarget => {
     const rowId = element?.closest('[data-row-id]')?.getAttribute('data-row-id') ?? null;
@@ -130,7 +157,7 @@ export function FolderContent({
 
   const row = (item: BookmarkNode) => (
     <>
-      <ItemName item={item} />
+      <DragItem item={item}><ItemName item={item} /></DragItem>
       {item.kind !== 'separator' ? (
         <PinToggle item={item} pinned={pinned.has(item.id)} onTogglePin={onTogglePin} />
       ) : null}
@@ -141,15 +168,26 @@ export function FolderContent({
     <ContentContextMenu
       resolveTarget={resolveTarget}
       canCreate={target => createParent(target).ok}
+      canMove={target => nodes.some(node => node.id === target.id && node.unmodifiable === undefined)}
+      canMoveToStart={target => target.kind !== 'pane' && items[0]?.id !== target.id &&
+        items.some(item => item.id === target.id && item.unmodifiable === undefined)}
       isPinned={target => pinned.has(target.id)}
       onOpenFolder={onSelect}
       onOpenBookmark={url => window.open(url, '_blank', 'noopener')}
       onCreateFolder={handleCreate}
+      onMove={target => onMove(target.id)}
+      onMoveToStart={target => {
+        const first = items[0];
+        if (first !== undefined) void onDropBefore(target.id, first.id).then(result => {
+          if (!result.ok) setDragError('Не удалось переместить. Обновите закладки и попробуйте ещё раз');
+        });
+      }}
       onTogglePin={target => onTogglePin(target.id)}
       onRefresh={onRefresh}
       onRestoreFocus={restoreFocus}
     >
       <section className="folder-content" aria-label="Содержимое папки" ref={sectionRef}>
+        {dragError !== null ? <p role="alert" className="error">{dragError}</p> : null}
         {items.length === 0 ? (
           <p className="empty-folder">Папка пуста</p>
         ) : view === 'list' ? (

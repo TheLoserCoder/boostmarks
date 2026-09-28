@@ -1,5 +1,6 @@
 import type { ChangeInfo, MoveInfo } from '../domain/reconcile';
 import type { BookmarkNode, RawTreeNode } from '../domain/types';
+import type { MoveError } from '../domain/move';
 
 export type { ChangeInfo, MoveInfo };
 
@@ -32,10 +33,14 @@ export type CreateFolderFailureReason = 'invalid-title' | 'invalid-parent' | 'fa
 
 export type CreateFolderResult = { ok: true; id: string } | { ok: false; reason: CreateFolderFailureReason };
 
+export type MoveResult = { ok: true } | { ok: false; reason: MoveError | 'failed' };
+
 /**
  * Native bookmark mutations. Creating goes through the browser API so the native
  * tree stays the single source of truth; the projection follows via its own events.
  */
 export interface BookmarkCommands {
   createFolder(parentId: string, title: string): Promise<CreateFolderResult>;
+  move(id: string, parentId: string): Promise<MoveResult>;
+  moveBefore(id: string, beforeId: string): Promise<MoveResult>;
 }

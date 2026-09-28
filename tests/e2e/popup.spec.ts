@@ -6,7 +6,7 @@ test('popup opens the installed extension manager', async () => {
   try {
     const page = await openExtensionPage(session.context, session.extensionId, 'popup.html');
     await page.getByRole('link', { name: 'Открыть проводник' }).click();
-    await expect(page.getByRole('heading', { name: 'Проводник закладок' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Закладки' })).toBeVisible();
   } finally {
     await session.close();
   }

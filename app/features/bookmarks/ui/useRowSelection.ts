@@ -113,16 +113,13 @@ export function useRowSelection(order: readonly string[], onActivate: (id: strin
           return;
         case 'Enter':
           event.preventDefault();
-          setState(current => {
-            if (current.focusId !== null) onActivate(current.focusId);
-            return current;
-          });
+          if (state.focusId !== null) onActivate(state.focusId);
           return;
         default:
           return;
       }
     },
-    [order, onActivate],
+    [order, onActivate, state.focusId],
   );
 
   const onBackgroundMouseDown = useCallback(

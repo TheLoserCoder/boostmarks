@@ -29,24 +29,35 @@ async function content() {
   return within(await screen.findByRole('region', { name: 'Содержимое папки' }));
 }
 
+async function home() {
+  return within(await screen.findByRole('region', { name: 'Главная' }));
+}
+
+/** The explorer lands on Home; tests open a folder before asserting its content. */
+async function openFolder(title: string) {
+  fireEvent.click((await sidebar()).getByRole('button', { name: title }));
+  return content();
+}
+
 describe('BookmarkExplorer two-pane shell', () => {
-  it('shows top-level folders in the sidebar and the first folder content in the pane', async () => {
+  it('lands on Home with cards for the top-level folders and marks it in the sidebar', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
 
     const folders = await sidebar();
-    expect(await folders.findByRole('button', { name: 'Панель закладок' })).toHaveAttribute('aria-current', 'page');
+    expect(folders.getByRole('button', { name: 'Главная' })).toHaveAttribute('aria-current', 'page');
+    expect(folders.getByRole('button', { name: 'Панель закладок' })).toBeInTheDocument();
     expect(folders.getByRole('button', { name: 'Другие закладки' })).toBeInTheDocument();
 
-    const pane = await content();
-    expect(pane.getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
-    expect(pane.getByRole('option', { name: 'Работа' })).toBeInTheDocument();
+    const cards = await home();
+    expect(cards.getByRole('button', { name: /Панель закладок/ })).toBeInTheDocument();
+    expect(cards.getByRole('button', { name: /Другие закладки/ })).toBeInTheDocument();
   });
 
   it('navigates into a nested folder and back through breadcrumbs', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await sidebar();
+    await openFolder('Панель закладок');
 
     fireEvent.doubleClick((await content()).getByRole('option', { name: 'Работа' }));
 
@@ -61,6 +72,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   it('opens bookmarks safely in a new tab', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
+    await openFolder('Панель закладок');
 
     const link = await (await content()).findByRole('link', { name: 'Boostmarks' });
     expect(link).toHaveAttribute('href', 'https://example.com');
@@ -88,7 +100,7 @@ describe('BookmarkExplorer two-pane shell', () => {
   it('re-reads the projection when the background reports a change', async () => {
     const { client, notify, setNodes } = fakeClient(tree);
     renderExplorer(client);
-    await sidebar();
+    await openFolder('Панель закладок');
 
     setNodes([...tree, node({ id: 'fresh', parentId: 'bar', title: 'Новая', url: 'https://new.dev', index: 2 })]);
     notify();
@@ -96,17 +108,17 @@ describe('BookmarkExplorer two-pane shell', () => {
     expect(await (await content()).findByRole('link', { name: 'Новая' })).toBeInTheDocument();
   });
 
-  it('falls back to the first folder when the selected folder disappears', async () => {
+  it('returns Home when the selected folder disappears', async () => {
     const { client, notify, setNodes } = fakeClient(tree);
     renderExplorer(client);
-    await sidebar();
+    await openFolder('Панель закладок');
     fireEvent.doubleClick((await content()).getByRole('option', { name: 'Работа' }));
     expect((await content()).getByRole('link', { name: 'Глубокий' })).toBeInTheDocument();
 
     setNodes(tree.filter(entry => entry.id !== 'folder' && entry.id !== 'deep'));
     notify();
 
-    await waitFor(() => expect(screen.getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument());
+    expect(await screen.findByRole('region', { name: 'Главная' })).toBeInTheDocument();
   });
 
   it('reports sync errors to the user and recovers on retry', async () => {
@@ -124,7 +136,7 @@ describe('BookmarkExplorer content views', () => {
   it('switches between list, table and grid renderings', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
 
     expect(screen.getByRole('listbox', { name: 'Список' })).toBeInTheDocument();
 
@@ -141,11 +153,12 @@ describe('BookmarkExplorer content views', () => {
   it('remembers the chosen view across renders', async () => {
     const { client } = fakeClient(tree);
     const first = renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
     fireEvent.click(screen.getByRole('radio', { name: 'Таблица' }));
     first.unmount();
 
     renderExplorer(client);
+    await openFolder('Панель закладок');
 
     await waitFor(() => expect(screen.getByRole('grid', { name: 'Содержимое папки' })).toBeInTheDocument());
   });
@@ -155,14 +168,15 @@ describe('BookmarkExplorer address bar', () => {
   it('edits the folder path, opens the resolved folder and returns to breadcrumbs', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Изменить путь' }));
+    expect(screen.queryByRole('button', { name: 'Изменить путь' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Ввести путь' }));
     const input = screen.getByLabelText('Путь к папке');
     expect(input).toHaveValue('Панель закладок');
 
     fireEvent.change(input, { target: { value: 'панель закладок\\работа' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Перейти' }));
+    fireEvent.submit(input.closest('form')!);
 
     expect((await content()).getByRole('link', { name: 'Глубокий' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Путь к папке')).not.toBeInTheDocument();
@@ -171,11 +185,11 @@ describe('BookmarkExplorer address bar', () => {
   it('keeps the current folder and explains an unknown path', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Изменить путь' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ввести путь' }));
     fireEvent.change(screen.getByLabelText('Путь к папке'), { target: { value: 'Панель закладок\\Нет такой' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Перейти' }));
+    fireEvent.submit(screen.getByLabelText('Путь к папке').closest('form')!);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Папка не найдена');
     expect((await content()).getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
@@ -184,9 +198,9 @@ describe('BookmarkExplorer address bar', () => {
   it('cancels editing with Escape', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Изменить путь' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ввести путь' }));
     fireEvent.keyDown(screen.getByLabelText('Путь к папке'), { key: 'Escape' });
 
     expect(screen.queryByLabelText('Путь к папке')).not.toBeInTheDocument();
@@ -198,7 +212,7 @@ describe('BookmarkExplorer search', () => {
   it('finds bookmarks by title and url and shows the containing folder', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await home();
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'deep' } });
 
@@ -211,7 +225,7 @@ describe('BookmarkExplorer search', () => {
   it('clears the query and returns to the folder content', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'deep.dev' } });
     await screen.findByRole('region', { name: 'Результаты поиска' });
@@ -225,7 +239,7 @@ describe('BookmarkExplorer search', () => {
   it('explains when nothing matches', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await home();
 
     fireEvent.change(screen.getByLabelText('Поиск закладок'), { target: { value: 'zzz-нет-такого' } });
 
@@ -237,7 +251,7 @@ describe('BookmarkExplorer quick links', () => {
   it('pins a content item into the sidebar and remembers it', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    await content();
+    await openFolder('Панель закладок');
 
     fireEvent.click(screen.getByRole('button', { name: 'Закрепить «Boostmarks»' }));
 
@@ -286,7 +300,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
 
-    const pane = await content();
+    const pane = await openFolder('Панель закладок');
     const work = pane.getByRole('option', { name: 'Работа' });
     fireEvent.click(work);
 
@@ -299,7 +313,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('toggles with ctrl, extends with shift and clears with Escape', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    const pane = await content();
+    const pane = await openFolder('Панель закладок');
     const work = pane.getByRole('option', { name: 'Работа' });
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
 
@@ -324,7 +338,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('selects all rows with ctrl+A', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    const pane = await content();
+    const pane = await openFolder('Панель закладок');
     const work = pane.getByRole('option', { name: 'Работа' });
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
 
@@ -338,7 +352,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('moves the roving focus with arrows and extends the range with shift', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    const pane = await content();
+    const pane = await openFolder('Панель закладок');
     const work = pane.getByRole('option', { name: 'Работа' });
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
 
@@ -354,7 +368,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('enters a folder with Enter', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    const work = (await content()).getByRole('option', { name: 'Работа' });
+    const work = (await openFolder('Панель закладок')).getByRole('option', { name: 'Работа' });
 
     fireEvent.click(work);
     fireEvent.keyDown(work, { key: 'Enter' });
@@ -366,7 +380,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    const pane = await content();
+    const pane = await openFolder('Панель закладок');
     const bookmark = pane.getByRole('option', { name: 'Boostmarks' });
 
     fireEvent.click(bookmark);
@@ -381,7 +395,7 @@ describe('BookmarkExplorer selection and keyboard', () => {
   it('selects visible rows with a marquee drag on the pane background', async () => {
     const { client } = fakeClient(tree);
     renderExplorer(client);
-    const pane = (await content()).getByRole('listbox', { name: 'Список' }).parentElement!;
+    const pane = (await openFolder('Панель закладок')).getByRole('listbox', { name: 'Список' }).parentElement!;
     vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue(domRect(0, 0, 400, 300));
 
     const workRow = pane.querySelector('[data-row-id="folder"]')!;

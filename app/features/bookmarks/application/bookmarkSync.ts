@@ -78,8 +78,8 @@ export function createBookmarkSync({ source, store, notify }: BookmarkSyncDeps):
     source.onMoved((id, move) => {
       void mutate('moved', current => {
         const next = applyMoved(current, id, move);
-        const updated = next.find(node => node.id === id);
-        return { next: updated === undefined ? current : next, persist: () => store.upsert([updated!]) };
+        const changed = next.filter((node, index) => node !== current[index]);
+        return { next, persist: () => store.upsert(changed) };
       });
     });
     source.onRemoved(id => {
