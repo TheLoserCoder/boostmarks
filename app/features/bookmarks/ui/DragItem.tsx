@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
+import { useI18n } from '../../i18n/I18nProvider';
 import type { DropKind } from '../domain/dropTarget';
 import type { BookmarkNode } from '../domain/types';
 import { useDropRules } from './dropRules';
@@ -32,6 +33,7 @@ const dropIdFor = (item: BookmarkNode): string =>
  * only activates after a short movement, so plain clicks never turn into drags.
  */
 export function DragItem({ item, children }: DragItemProps) {
+  const { t } = useI18n();
   const { canDrop, idsFor } = useDropRules();
   const { active } = useDndContext();
   const disabled = item.unmodifiable !== undefined;
@@ -55,7 +57,7 @@ export function DragItem({ item, children }: DragItemProps) {
       <button
         type="button"
         className="drag-handle"
-        aria-label={`Перетащить «${item.title || item.url || 'Разделитель'}»`}
+        aria-label={t('item.drag', { title: item.title || item.url || t('item.separator') })}
         disabled={disabled}
         {...attributes}
         tabIndex={-1}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { moveBatch, pluralRu } from '../../../app/features/bookmarks/application/moveBatch';
+import { moveBatch } from '../../../app/features/bookmarks/application/moveBatch';
 import type { BookmarkCommands } from '../../../app/features/bookmarks/application/ports';
 import { fakeCommands } from './support/fixtures';
 
@@ -47,18 +47,5 @@ describe('moveBatch', () => {
     const outcome = await moveBatch(commands, ['a', 'b', 'c'], 'folder', 'other');
     expect(calls).toEqual(['a', 'b', 'c']);
     expect(outcome).toEqual({ moved: 1, unchanged: 0, failed: 2 });
-  });
-});
-
-describe('pluralRu', () => {
-  it('picks the Russian form for the count', () => {
-    const forms = ['элемент', 'элемента', 'элементов'] as const;
-    expect(pluralRu(1, forms)).toBe('элемент');
-    expect(pluralRu(2, forms)).toBe('элемента');
-    expect(pluralRu(4, forms)).toBe('элемента');
-    expect(pluralRu(5, forms)).toBe('элементов');
-    expect(pluralRu(11, forms)).toBe('элементов');
-    expect(pluralRu(21, forms)).toBe('элемент');
-    expect(pluralRu(112, forms)).toBe('элементов');
   });
 });

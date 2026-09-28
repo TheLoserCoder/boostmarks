@@ -1,13 +1,8 @@
 import React from 'react';
 import { LayoutGrid, List, Table2 } from 'lucide-react';
 import { RadioGroup, type RadioOption } from '../../../ui/RadioGroup';
+import { useI18n } from '../../i18n/I18nProvider';
 import type { ViewMode } from './viewPreference';
-
-export const VIEW_OPTIONS: ReadonlyArray<RadioOption<ViewMode>> = [
-  { value: 'list', label: 'Список', icon: <List size={16} aria-hidden="true" /> },
-  { value: 'table', label: 'Таблица', icon: <Table2 size={16} aria-hidden="true" /> },
-  { value: 'grid', label: 'Сетка', icon: <LayoutGrid size={16} aria-hidden="true" /> },
-];
 
 interface ViewSwitcherProps {
   value: ViewMode;
@@ -15,5 +10,12 @@ interface ViewSwitcherProps {
 }
 
 export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
-  return <RadioGroup label="Вид" value={value} options={VIEW_OPTIONS} onChange={onChange} className="view-switcher" />;
+  const { t } = useI18n();
+  const options: ReadonlyArray<RadioOption<ViewMode>> = [
+    { value: 'list', label: t('view.list'), icon: <List size={16} aria-hidden="true" /> },
+    { value: 'table', label: t('view.table'), icon: <Table2 size={16} aria-hidden="true" /> },
+    { value: 'grid', label: t('view.grid'), icon: <LayoutGrid size={16} aria-hidden="true" /> },
+  ];
+
+  return <RadioGroup label={t('view.label')} value={value} options={options} onChange={onChange} className="view-switcher" />;
 }

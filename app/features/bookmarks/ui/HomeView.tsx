@@ -2,19 +2,7 @@ import React from 'react';
 import { Folder, Link } from 'lucide-react';
 import { childrenOf, topLevelFolders } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
-
-/** Russian plural for «элемент» so card captions read naturally at any count. */
-export function formatItemCount(count: number): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  const word =
-    mod10 === 1 && mod100 !== 11
-      ? 'элемент'
-      : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
-        ? 'элемента'
-        : 'элементов';
-  return `${count} ${word}`;
-}
+import { useI18n } from '../../i18n/I18nProvider';
 
 function hostOf(url: string | undefined): string {
   if (url === undefined || url.length === 0) return '';
@@ -37,6 +25,7 @@ interface HomeViewProps {
  * visit time, and no fake sections that the extension cannot back with data.
  */
 export function HomeView({ nodes, pinnedIds, onOpenFolder }: HomeViewProps) {
+  const { t, plural } = useI18n();
   const byId = new Map(nodes.map(node => [node.id, node]));
   const pinned: BookmarkNode[] = [];
   const seen = new Set<string>();
@@ -56,7 +45,9 @@ export function HomeView({ nodes, pinnedIds, onOpenFolder }: HomeViewProps) {
   };
 
   const caption = (node: BookmarkNode) =>
-    node.kind === 'folder' ? formatItemCount(childrenOf(nodes, node.id).length) : hostOf(node.url);
+    node.kind === 'folder'
+      ? plural('home.childCount', childrenOf(nodes, node.id).length)
+      : hostOf(node.url);
 
   const card = (node: BookmarkNode) => (
     <li key={node.id}>
@@ -67,7 +58,7 @@ export function HomeView({ nodes, pinnedIds, onOpenFolder }: HomeViewProps) {
           <Link className="home-card-icon" size={20} aria-hidden="true" />
         )}
         <span className="home-card-body">
-          <span className="home-card-title">{node.title || node.url || 'Разделитель'}</span>
+          <span className="home-card-title">{node.title || node.url || t('item.separator')}</span>
           <span className="home-card-caption">{caption(node)}</span>
         </span>
       </button>
@@ -75,20 +66,20 @@ export function HomeView({ nodes, pinnedIds, onOpenFolder }: HomeViewProps) {
   );
 
   return (
-    <section className="home-view" aria-label="Главная">
+    <section className="home-view" aria-label={t('home.region')}>
       {empty ? (
-        <p className="empty">Папок пока нет. Создайте их в браузере или закрепите закладку в боковой панели.</p>
+        <p className="empty">{t('home.empty')}</p>
       ) : (
         <>
           {pinned.length > 0 ? (
             <section className="home-section" aria-labelledby="home-pinned-heading">
-              <h2 id="home-pinned-heading">Закреплённые</h2>
+              <h2 id="home-pinned-heading">{t('home.pinned')}</h2>
               <ul className="home-cards">{pinned.map(card)}</ul>
             </section>
           ) : null}
           {folders.length > 0 ? (
             <section className="home-section" aria-labelledby="home-folders-heading">
-              <h2 id="home-folders-heading">Папки</h2>
+              <h2 id="home-folders-heading">{t('home.folders')}</h2>
               <ul className="home-cards">{folders.map(card)}</ul>
             </section>
           ) : null}

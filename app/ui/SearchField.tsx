@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, X } from 'lucide-react';
 import { IconButton } from './Button';
+import { useI18n } from '../features/i18n/I18nProvider';
 
 interface SearchFieldProps {
   value: string;
@@ -11,7 +12,8 @@ interface SearchFieldProps {
 }
 
 export function SearchField({ value, onChange, label, placeholder, clearLabel }: SearchFieldProps) {
-  const clearText = clearLabel ?? `Очистить: ${label}`;
+  const { t } = useI18n();
+  const clearText = clearLabel ?? t('search.clearFallback', { label });
 
   return (
     <div className="ui-search">

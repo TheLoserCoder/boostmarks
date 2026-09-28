@@ -2,6 +2,7 @@ import React from 'react';
 import { Folder, Link } from 'lucide-react';
 import { formatFolderPath } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
+import { useI18n } from '../../i18n/I18nProvider';
 import { VirtualList } from './VirtualList';
 
 interface SearchResultsProps {
@@ -11,15 +12,17 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ nodes, results, onOpenFolder }: SearchResultsProps) {
+  const { t } = useI18n();
+
   return (
-    <section className="search-results" aria-label="Результаты поиска">
+    <section className="search-results" aria-label={t('search.results')}>
       {results.length === 0 ? (
-        <p className="empty">Ничего не найдено</p>
+        <p className="empty">{t('search.nothing')}</p>
       ) : (
         <VirtualList
           items={results}
           getKey={node => node.id}
-          label="Найденные закладки"
+          label={t('search.resultList')}
           renderItem={node => {
             const location = node.parentId === null ? '' : formatFolderPath(nodes, node.parentId);
             const title = node.title || node.url || '';

@@ -165,10 +165,11 @@
             "title": "Locale ru/en and theme switching",
             "description": "Minimal i18n layer with ru/en dictionaries for the extension UI, language preference, and light/dark/system theme with custom tokens; no hardcoded strings left in explorer.",
             "details": "",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 3,
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-09-28T23:10:00.000Z"
           },
           {
             "id": 8,
@@ -598,11 +599,11 @@
             "title": "Popup options and localization alignment",
             "description": "P2: Align shared visual language with popup/options; coordinate theme and ru/en preferences with existing task 3.7, no duplicate i18n.",
             "details": "",
-            "status": "in-progress",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 12,
             "parentId": "undefined",
-            "updatedAt": "2026-09-27T22:08:35.894Z"
+            "updatedAt": "2026-09-28T23:10:00.000Z"
           },
           {
             "id": 6,
@@ -615,12 +616,12 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-09-27T22:08:35.894Z"
+        "updatedAt": "2026-09-28T23:10:00.000Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-09-28T22:00:00.000Z",
+      "lastModified": "2026-09-28T23:10:00.000Z",
       "taskCount": 12,
       "completedCount": 6,
       "tags": [

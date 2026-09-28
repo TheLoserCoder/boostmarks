@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ExternalLink, FolderOpen, FolderPlus, Pin, PinOff, RefreshCw, FolderInput, ArrowUpToLine } from 'lucide-react';
+import { useI18n } from '../../i18n/I18nProvider';
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -51,6 +52,7 @@ export function ContentContextMenu({
   onRestoreFocus,
   children,
 }: ContentContextMenuProps) {
+  const { t } = useI18n();
   const [target, setTarget] = useState<ContextTarget>(emptyTarget);
   const createAllowed = canCreate(target);
   const pinned = target.kind === 'pane' ? false : isPinned(target);
@@ -66,7 +68,7 @@ export function ContentContextMenu({
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent
-        label="Действия"
+        label={t('menu.actions')}
         onCloseAutoFocus={event => {
           // Radix would focus the (non-focusable) pane; keep the row that had focus.
           event.preventDefault();
@@ -75,7 +77,7 @@ export function ContentContextMenu({
       >
         {target.kind === 'folder' ? (
           <ContextMenuItem icon={<FolderOpen size={16} aria-hidden="true" />} onSelect={() => onOpenFolder(target.id)}>
-            Открыть
+            {t('menu.open')}
           </ContextMenuItem>
         ) : null}
         {target.kind === 'bookmark' && target.url !== undefined ? (
@@ -83,7 +85,7 @@ export function ContentContextMenu({
             icon={<ExternalLink size={16} aria-hidden="true" />}
             onSelect={() => onOpenBookmark(target.url!)}
           >
-            Открыть в новой вкладке
+            {t('menu.openTab')}
           </ContextMenuItem>
         ) : null}
         {target.kind !== 'pane' ? <ContextMenuSeparator /> : null}
@@ -92,7 +94,7 @@ export function ContentContextMenu({
           disabled={!createAllowed}
           onSelect={() => onCreateFolder(target)}
         >
-          {target.kind === 'folder' ? `Создать папку в «${target.title}»` : 'Новая папка'}
+          {target.kind === 'folder' ? t('menu.createIn', { title: target.title }) : t('command.newFolder')}
         </ContextMenuItem>
         {target.kind !== 'pane' ? (
           <>
@@ -102,14 +104,14 @@ export function ContentContextMenu({
               disabled={!canMove(target)}
               onSelect={() => onMove(target)}
             >
-              Переместить…
+              {t('menu.move')}
             </ContextMenuItem>
             <ContextMenuItem
               icon={<ArrowUpToLine size={16} aria-hidden="true" />}
               disabled={!canMoveToStart(target)}
               onSelect={() => onMoveToStart(target)}
             >
-              В начало папки
+              {t('menu.moveToStart')}
             </ContextMenuItem>
             <ContextMenuItem
               icon={
@@ -117,14 +119,14 @@ export function ContentContextMenu({
               }
               onSelect={() => onTogglePin(target)}
             >
-              {pinned ? 'Убрать из быстрого доступа' : 'Закрепить в быстром доступе'}
+              {pinned ? t('menu.unpin') : t('menu.pin')}
             </ContextMenuItem>
           </>
         ) : (
           <>
             <ContextMenuSeparator />
             <ContextMenuItem icon={<RefreshCw size={16} aria-hidden="true" />} onSelect={onRefresh}>
-              Обновить
+              {t('nav.refresh')}
             </ContextMenuItem>
           </>
         )}

@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { IconButton } from '../../../ui/Button';
+import { useI18n } from '../../i18n/I18nProvider';
 import { folderChain, formatFolderPath, resolveFolderPath } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
+import type { TranslationKey } from '../../i18n/messages';
 
 interface AddressBarProps {
   nodes: BookmarkNode[];
@@ -11,13 +13,14 @@ interface AddressBarProps {
   onNavigate: (id: string) => void;
 }
 
-const ERROR_TEXT: Record<'empty' | 'not-found' | 'ambiguous', string> = {
-  empty: 'Введите путь к папке',
-  'not-found': 'Папка не найдена',
-  ambiguous: 'Найдено несколько папок с таким именем — уточните путь',
-};
+const ERROR_KEYS = {
+  empty: 'address.empty',
+  'not-found': 'address.notFound',
+  ambiguous: 'address.ambiguous',
+} as const satisfies Record<'empty' | 'not-found' | 'ambiguous', TranslationKey>;
 
 export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
+  const { t } = useI18n();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +50,7 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
       onNavigate(result.folderId);
       return;
     }
-    setError(ERROR_TEXT[result.reason]);
+    setError(t(ERROR_KEYS[result.reason]));
   };
 
   if (editing) {
@@ -56,7 +59,7 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
         <input
           ref={inputRef}
           className="ui-input path-input"
-          aria-label="Путь к папке"
+          aria-label={t('address.path')}
           name="bookmark-path"
           autoComplete="off"
           spellCheck={false}
@@ -77,12 +80,12 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
 
   return (
     <div className="address-bar address-field">
-      <nav aria-label="Путь" className="breadcrumbs">
+      <nav aria-label={t('address.breadcrumbs')} className="breadcrumbs">
         <ol>
           {chain.length === 0 ? (
             <li>
               <span className="breadcrumb-current" aria-current="page">
-                Главная
+                {t('nav.home')}
               </span>
             </li>
           ) : (
@@ -100,7 +103,7 @@ export function AddressBar({ nodes, folderId, onNavigate }: AddressBarProps) {
           )}
         </ol>
       </nav>
-      <IconButton className="address-edit-trigger" aria-label="Ввести путь" size="sm" onClick={startEditing}>
+      <IconButton className="address-edit-trigger" aria-label={t('address.edit')} size="sm" onClick={startEditing}>
         <ChevronDown size={14} aria-hidden="true" />
       </IconButton>
     </div>

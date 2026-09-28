@@ -13,13 +13,15 @@ import {
 import { ArrowLeft, ArrowRight, ArrowUp, Folder, FolderPlus, Link, RefreshCw, Settings } from 'lucide-react';
 import { Button, IconButton } from '../../../ui/Button';
 import { SearchField } from '../../../ui/SearchField';
+import { useI18n } from '../../i18n/I18nProvider';
+import type { TranslationKey } from '../../i18n/messages';
 import type { BookmarkCommands, CreateFolderFailureReason, MoveResult, ProjectionClient } from '../application/ports';
 import { canGoBack, canGoForward, emptyHistory, goBack, goForward, visit, type NavigationHistory } from '../domain/history';
 import { childrenOf, isSyntheticRoot } from '../domain/path';
 import { HomeView } from './HomeView';
 import { isWritableFolder, validateFolderName } from '../domain/createFolder';
 import { canDropManyOn } from '../domain/dropTarget';
-import { moveBatch, pluralRu } from '../application/moveBatch';
+import { moveBatch } from '../application/moveBatch';
 import { searchNodes } from '../domain/search';
 import type { BookmarkNode } from '../domain/types';
 import { AddressBar } from './AddressBar';
@@ -46,11 +48,11 @@ interface CreateTarget {
   parentTitle: string;
 }
 
-const CREATE_ERRORS: Record<CreateFolderFailureReason, string> = {
-  'invalid-title': 'Введите имя папки',
-  'invalid-parent': 'Папка назначения больше не существует',
-  failed: 'Не удалось создать папку. Попробуйте ещё раз',
-};
+const CREATE_ERROR_KEYS = {
+  'invalid-title': 'newFolder.emptyName',
+  'invalid-parent': 'create.error.invalidParent',
+  failed: 'create.error.failed',
+} as const satisfies Record<CreateFolderFailureReason, TranslationKey>;
 
 const dropAnimation: DropAnimation = {
   duration: 180,
@@ -60,20 +62,21 @@ const dropAnimation: DropAnimation = {
   }),
 };
 
-const MOVE_ERRORS: Record<Extract<MoveResult, { ok: false }>['reason'], string> = {
-  'missing-source': 'Элемент больше не существует',
-  'invalid-parent': 'Папка назначения больше не существует или недоступна',
-  cycle: 'Нельзя переместить папку внутрь самой себя',
-  unchanged: 'Элемент уже находится в этой папке',
-  unmodifiable: 'Этот элемент нельзя переместить',
-  failed: 'Не удалось переместить. Попробуйте ещё раз',
-};
+const MOVE_ERROR_KEYS = {
+  'missing-source': 'move.error.missingSource',
+  'invalid-parent': 'move.error.invalidParent',
+  cycle: 'move.error.cycle',
+  unchanged: 'move.error.unchanged',
+  unmodifiable: 'move.error.unmodifiable',
+  failed: 'move.error.failed',
+} as const satisfies Record<Extract<MoveResult, { ok: false }>['reason'], TranslationKey>;
 
 function hasContent(nodes: BookmarkNode[]): boolean {
   return nodes.some(node => node.kind !== 'separator' && node.parentId !== null);
 }
 
 export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
+  const { t, plural } = useI18n();
   const [status, setStatus] = useState<Status>('loading');
   const [nodes, setNodes] = useState<BookmarkNode[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -204,7 +207,7 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
     if (createTarget === null) return;
     const clash = validateFolderName(name, childrenOf(nodes, createTarget.parentId));
     if (clash === 'duplicate') {
-      setCreateError('Папка с таким именем уже есть в этой папке');
+      setCreateError(t('create.error.duplicate'));
       return;
     }
 
@@ -213,7 +216,7 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
     const result = await commands.createFolder(createTarget.parentId, name);
     setCreatePending(false);
     if (!result.ok) {
-      setCreateError(CREATE_ERRORS[result.reason]);
+      setCreateError(t(CREATE_ERROR_KEYS[result.reason]));
       return;
     }
 
@@ -232,7 +235,7 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
     const result = await commands.move(moveTargetId, parentId);
     setMovePending(false);
     if (!result.ok) {
-      setMoveError(MOVE_ERRORS[result.reason]);
+      setMoveError(t(MOVE_ERROR_KEYS[result.reason]));
       return;
     }
     setMoveTargetId(null);
@@ -249,31 +252,31 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
     setDragNotice(null);
 
     const outcome = await moveBatch(commands, ids, kind, targetId);
-    const targetTitle = nodes.find(node => node.id === targetId)?.title || 'Папка';
+    const targetTitle = nodes.find(node => node.id === targetId)?.title || t('item.folder');
 
     if (ids.length === 1) {
-      const sourceTitle = nodes.find(node => node.id === ids[0])?.title || 'Элемент';
+      const sourceTitle = nodes.find(node => node.id === ids[0])?.title || t('item.element');
       if (outcome.moved === 0) {
-        setDragError('Не удалось переместить. Обновите закладки и попробуйте ещё раз');
+        setDragError(t('drag.failed'));
         return;
       }
       setDragNotice(kind === 'before'
-        ? `«${sourceTitle}» перемещено перед «${targetTitle}»`
-        : `Перемещено «${sourceTitle}» в «${targetTitle}»`);
+        ? t('drag.movedBefore', { source: sourceTitle, target: targetTitle })
+        : t('drag.moved', { source: sourceTitle, target: targetTitle }));
       return;
     }
 
     if (outcome.failed > 0) {
       setDragError(outcome.moved > 0
-        ? `Перемещено ${outcome.moved} из ${ids.length}, часть не удалось переместить`
-        : 'Не удалось переместить. Обновите закладки и попробуйте ещё раз');
+        ? t('drag.partial', { moved: outcome.moved, total: ids.length })
+        : t('drag.failed'));
       return;
     }
-    const noun = pluralRu(ids.length, ['элемент', 'элемента', 'элементов']);
-    const preposition = kind === 'before' ? 'перед' : 'в';
-    setDragNotice(outcome.moved === ids.length
-      ? `Перемещено ${outcome.moved} ${noun} ${preposition} «${targetTitle}»`
-      : `Перемещено ${outcome.moved} из ${ids.length} ${noun} ${preposition} «${targetTitle}»`);
+    const noun = plural('item.noun', ids.length);
+    const messageKey = kind === 'before'
+      ? (outcome.moved === ids.length ? 'drag.movedManyBefore' : 'drag.movedSomeBefore')
+      : (outcome.moved === ids.length ? 'drag.movedMany' : 'drag.movedSome');
+    setDragNotice(t(messageKey, { moved: outcome.moved, count: outcome.moved, total: ids.length, noun, target: targetTitle }));
   };
 
   const dragIds = activeDragId === null ? [] : dropRules.idsFor(activeDragId);
@@ -281,11 +284,11 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
 
   if (status === 'error') {
     return (
-      <section className="explorer" aria-label="Закладки">
+      <section className="explorer" aria-label={t('explorer.region')}>
         <div role="alert" className="error">
-          <p>Не удалось прочитать локальную проекцию.</p>
+          <p>{t('explorer.loadError')}</p>
           <button type="button" onClick={() => void load()}>
-            Повторить
+            {t('explorer.retry')}
           </button>
         </div>
       </section>
@@ -300,7 +303,7 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
   const canCreateHere = isWritableFolder(currentFolder);
 
   return (
-    <section className="explorer" aria-label="Закладки">
+    <section className="explorer" aria-label={t('explorer.region')}>
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}
@@ -311,16 +314,16 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
           void finishDrag(event);
         }}
         accessibility={{
-          screenReaderInstructions: { draggable: 'Для перемещения с клавиатуры откройте контекстное меню строки.' },
+          screenReaderInstructions: { draggable: t('drag.hint') },
           announcements: {
             onDragStart: ({ active }) => {
               const id = dragSourceId(active.id);
               const total = id === null ? 1 : dropRules.idsFor(id).length;
-              return total > 1 ? `Перетаскивание ${total} элементов начато` : 'Перетаскивание начато';
+              return total > 1 ? t('drag.startMany', { count: total }) : t('drag.start');
             },
             onDragOver: () => '',
-            onDragEnd: () => 'Перетаскивание завершено',
-            onDragCancel: () => 'Перетаскивание отменено',
+            onDragEnd: () => t('drag.end'),
+            onDragCancel: () => t('drag.cancel'),
           },
         }}
       >
@@ -329,25 +332,25 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
       {status === 'ready' && count > 0 ? (
         <div className="toolbar">
           <div className="nav-row">
-            <IconButton aria-label="Назад" size="sm" disabled={!canGoBack(history)} onClick={navigateBack}>
+            <IconButton aria-label={t('nav.back')} size="sm" disabled={!canGoBack(history)} onClick={navigateBack}>
               <ArrowLeft size={16} aria-hidden="true" />
             </IconButton>
-            <IconButton aria-label="Вперёд" size="sm" disabled={!canGoForward(history)} onClick={navigateForward}>
+            <IconButton aria-label={t('nav.forward')} size="sm" disabled={!canGoForward(history)} onClick={navigateForward}>
               <ArrowRight size={16} aria-hidden="true" />
             </IconButton>
-            <IconButton aria-label="Вверх" size="sm" disabled={!canGoUp} onClick={() => parentFolder && navigate(parentFolder.id)}>
+            <IconButton aria-label={t('nav.up')} size="sm" disabled={!canGoUp} onClick={() => parentFolder && navigate(parentFolder.id)}>
               <ArrowUp size={16} aria-hidden="true" />
             </IconButton>
-            <IconButton aria-label="Обновить" size="sm" onClick={refresh}>
+            <IconButton aria-label={t('nav.refresh')} size="sm" onClick={refresh}>
               <RefreshCw size={16} aria-hidden="true" />
             </IconButton>
             <AddressBar nodes={nodes} folderId={selectedId ?? ''} onNavigate={navigate} />
             <SearchField
               value={query}
               onChange={setQuery}
-              label="Поиск закладок"
-              placeholder="Название или адрес…"
-              clearLabel="Очистить поиск"
+              label={t('search.label')}
+              placeholder={t('search.placeholder')}
+              clearLabel={t('search.clear')}
             />
           </div>
           <div className="command-bar">
@@ -355,10 +358,10 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => startCreateFolder(currentFolder.id, currentFolder.title || 'Корень')}
+                onClick={() => startCreateFolder(currentFolder.id, currentFolder.title || t('quick.root'))}
               >
                 <FolderPlus size={16} aria-hidden="true" />
-                <span>Новая папка</span>
+                <span>{t('command.newFolder')}</span>
               </Button>
             ) : null}
             <ViewSwitcher value={view} onChange={changeView} />
@@ -381,16 +384,16 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
           <div className="sidebar-footer">
             <a className="sidebar-action" href="/options.html">
               <Settings size={16} aria-hidden="true" />
-              <span>Настройки</span>
+              <span>{t('nav.settings')}</span>
             </a>
           </div>
         </aside>
 
         <div className="workspace">
           {status === 'loading' ? (
-            <p className="loading">Загрузка…</p>
+            <p className="loading">{t('explorer.loading')}</p>
           ) : count === 0 ? (
-            <p className="empty">В этой проекции пока нет закладок</p>
+            <p className="empty">{t('explorer.emptyProjection')}</p>
           ) : (
             <>
                {dragError !== null ? <p role="alert" className="error">{dragError}</p> : null}
@@ -420,7 +423,9 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
               )}
               <div className="status-bar">
                 <p role="status" className="status">
-                  {searching ? `Найдено: ${results.length}` : `Закладок в проекции: ${count}`}
+                  {searching
+                    ? t('search.found', { count: results.length })
+                    : t('status.projected', { count })}
                 </p>
                 {dragNotice !== null ? <p role="status" className="status status-bar-notice">{dragNotice}</p> : null}
               </div>
@@ -434,7 +439,7 @@ export function BookmarkExplorer({ client, commands }: BookmarkExplorerProps) {
         {dragNode !== undefined ? (
           <div className="drag-overlay" aria-hidden="true">
             {dragNode.kind === 'folder' ? <Folder size={16} /> : <Link size={16} />}
-            <span>{dragNode.title || dragNode.url || 'Разделитель'}</span>
+            <span>{dragNode.title || dragNode.url || t('item.separator')}</span>
             {dragIds.length > 1 ? <span className="drag-count">+{dragIds.length - 1}</span> : null}
           </div>
         ) : null}

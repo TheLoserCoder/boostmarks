@@ -19,6 +19,23 @@ if (typeof Element.prototype.scrollIntoView !== 'function') {
   Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, writable: true, value: () => undefined });
 }
 
+if (typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string): MediaQueryList => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
 for (const method of ['hasPointerCapture', 'setPointerCapture', 'releasePointerCapture'] as const) {
   if (typeof Element.prototype[method] !== 'function') {
     Object.defineProperty(Element.prototype, method, { configurable: true, writable: true, value: () => false });

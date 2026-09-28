@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Folder, Link, Pin, PinOff } from 'lucide-react';
 import { IconButton } from '../../../ui/Button';
 import { dispatchContextMenu } from '../../../ui/ContextMenu';
+import { useI18n } from '../../i18n/I18nProvider';
 import { resolveCreateTarget } from '../domain/createFolder';
 import { childrenOf } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
@@ -58,22 +59,20 @@ function ItemName({ item }: { item: BookmarkNode }) {
 }
 
 function PinToggle({ item, pinned, onTogglePin }: { item: BookmarkNode; pinned: boolean; onTogglePin: (id: string) => void }) {
+  const { t } = useI18n();
   const title = item.title || item.url || '';
 
   return (
     <IconButton
       size="sm"
       className="pin-toggle"
-      aria-label={pinned ? `Открепить «${title}»` : `Закрепить «${title}»`}
+      aria-label={pinned ? t('item.unpin', { title }) : t('item.pin', { title })}
       onClick={() => onTogglePin(item.id)}
     >
       {pinned ? <PinOff size={14} aria-hidden="true" /> : <Pin size={14} aria-hidden="true" />}
     </IconButton>
   );
 }
-
-const kindLabel = (item: BookmarkNode) =>
-  item.kind === 'folder' ? 'Папка' : item.kind === 'bookmark' ? 'Закладка' : 'Разделитель';
 
 const rowLabel = (item: BookmarkNode) => item.title || item.url || '';
 
@@ -90,11 +89,15 @@ export function FolderContent({
   onDropBefore,
   onSelectionChange,
 }: FolderContentProps) {
+  const { t } = useI18n();
   const items = useMemo(() => childrenOf(nodes, folderId), [nodes, folderId]);
   const pinned = new Set(pinnedIds);
   const order = useMemo(() => items.map(item => item.id), [items]);
   const sectionRef = useRef<HTMLElement>(null);
   const [dragError, setDragError] = React.useState<string | null>(null);
+
+  const kindLabel = (item: BookmarkNode) =>
+    item.kind === 'folder' ? t('item.folder') : item.kind === 'bookmark' ? t('item.bookmark') : t('item.separator');
 
   const activate = useCallback(
     (id: string) => {
@@ -179,23 +182,23 @@ export function FolderContent({
       onMoveToStart={target => {
         const first = items[0];
         if (first !== undefined) void onDropBefore(target.id, first.id).then(result => {
-          if (!result.ok) setDragError('Не удалось переместить. Обновите закладки и попробуйте ещё раз');
+          if (!result.ok) setDragError(t('drag.failed'));
         });
       }}
       onTogglePin={target => onTogglePin(target.id)}
       onRefresh={onRefresh}
       onRestoreFocus={restoreFocus}
     >
-      <section className="folder-content" aria-label="Содержимое папки" ref={sectionRef}>
+      <section className="folder-content" aria-label={t('content.region')} ref={sectionRef}>
         {dragError !== null ? <p role="alert" className="error">{dragError}</p> : null}
         {items.length === 0 ? (
-          <p className="empty-folder">Папка пуста</p>
+          <p className="empty-folder">{t('content.empty')}</p>
         ) : view === 'list' ? (
           <VirtualList
             items={items}
             getKey={item => item.id}
             getLabel={rowLabel}
-            label="Список"
+            label={t('view.list')}
             controller={controller}
             rowKeyDown={handleRowKeyDown}
             renderItem={item => row(item)}
@@ -205,10 +208,10 @@ export function FolderContent({
             items={items}
             getKey={item => item.id}
             getLabel={rowLabel}
-            label="Содержимое папки"
+            label={t('content.region')}
             controller={controller}
             rowKeyDown={handleRowKeyDown}
-            columns={['Название', 'Тип', 'Адрес']}
+            columns={[t('content.columns.name'), t('content.columns.type'), t('content.columns.address')]}
             renderCells={item => [
               <div role="gridcell" key="name" className="virtual-cell">
                 {row(item)}
@@ -224,7 +227,7 @@ export function FolderContent({
         ) : (
           <ul
             className="content-grid"
-            aria-label="Плитка"
+            aria-label={t('view.grid')}
             role="listbox"
             aria-multiselectable={true}
             onKeyDown={controller.onKeyDown}

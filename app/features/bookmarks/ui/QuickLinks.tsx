@@ -2,6 +2,7 @@ import React from 'react';
 import { useDndContext, useDroppable } from '@dnd-kit/core';
 import { Folder, FolderOpen, Home, Link, PinOff } from 'lucide-react';
 import { IconButton } from '../../../ui/Button';
+import { useI18n } from '../../i18n/I18nProvider';
 import { quickLinks } from '../domain/path';
 import type { BookmarkNode } from '../domain/types';
 import { dragSourceId } from './DragItem';
@@ -18,8 +19,10 @@ interface QuickLinksProps {
 }
 
 function UnpinButton({ title, id, onTogglePin }: { title: string; id: string; onTogglePin: (id: string) => void }) {
+  const { t } = useI18n();
+
   return (
-    <IconButton size="sm" aria-label={`Открепить «${title}»`} onClick={() => onTogglePin(id)}>
+    <IconButton size="sm" aria-label={t('item.unpin', { title })} onClick={() => onTogglePin(id)}>
       <PinOff size={14} aria-hidden="true" />
     </IconButton>
   );
@@ -30,6 +33,7 @@ function FolderLink({ node, selected, onSelect }: {
   selected: boolean;
   onSelect: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const { canDrop, idsFor } = useDropRules();
   const { active } = useDndContext();
   const { setNodeRef, isOver } = useDroppable({
@@ -50,17 +54,18 @@ function FolderLink({ node, selected, onSelect }: {
       onClick={() => onSelect(node.id)}
     >
       {selected ? <FolderOpen size={16} aria-hidden="true" /> : <Folder size={16} aria-hidden="true" />}
-      <span>{node.title || 'Корень'}</span>
+      <span>{node.title || t('quick.root')}</span>
     </button>
   );
 }
 
 export function QuickLinks({ nodes, pinnedIds, selectedId, homeActive, onSelect, onGoHome, onTogglePin }: QuickLinksProps) {
+  const { t } = useI18n();
   const links = quickLinks(nodes, pinnedIds);
   const pinned = new Set(pinnedIds);
 
   return (
-    <nav aria-label="Быстрый доступ" className="quick-links">
+    <nav aria-label={t('quick.access')} className="quick-links">
       <ul>
         <li>
           <button
@@ -70,11 +75,11 @@ export function QuickLinks({ nodes, pinnedIds, selectedId, homeActive, onSelect,
             onClick={onGoHome}
           >
             <Home size={16} aria-hidden="true" />
-            <span>Главная</span>
+            <span>{t('quick.home')}</span>
           </button>
         </li>
         {links.map(node => {
-          const title = node.title || node.url || 'Корень';
+          const title = node.title || node.url || t('quick.root');
           const selected = node.kind === 'folder' && node.id === selectedId;
 
           return (

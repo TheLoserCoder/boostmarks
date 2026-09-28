@@ -146,8 +146,8 @@ describe('BookmarkExplorer content views', () => {
     expect(within(table).getByRole('link', { name: 'Boostmarks' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('radio', { name: 'Сетка' }));
-    expect(screen.getByRole('listbox', { name: 'Плитка' })).toBeInTheDocument();
-    expect(within(screen.getByRole('listbox', { name: 'Плитка' })).getByRole('option', { name: 'Работа' })).toBeInTheDocument();
+    expect(screen.getByRole('listbox', { name: 'Сетка' })).toBeInTheDocument();
+    expect(within(screen.getByRole('listbox', { name: 'Сетка' })).getByRole('option', { name: 'Работа' })).toBeInTheDocument();
   });
 
   it('remembers the chosen view across renders', async () => {
